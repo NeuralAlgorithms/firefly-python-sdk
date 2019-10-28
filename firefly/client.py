@@ -1,9 +1,11 @@
 from collections import OrderedDict
 
 import requests
+from flask_log_request_id import current_request_id
 
-from firefly import logger
+from firefly import logger, ENDPOINT
 from firefly.errors import FireflyClientError, ServiceException
+from firefly.mixins.um_mixin import UMMixin
 
 
 class _BaseClient:
@@ -124,7 +126,7 @@ class _BaseClient:
             return sorts
 
 
-class Client(_BaseClient):
-    def __init__(self, endpoint, port, use_https, username, password):
-        super().__init__(endpoint, port, use_https)
-
+class Client(_BaseClient, UMMixin):
+    def __init__(self, username, password, endpoint=ENDPOINT, port=443, use_https=True):
+        super().__init__(endpoint=endpoint, port=port, use_https=use_https)
+        self.token = self.login(username, password)['token']
