@@ -15,12 +15,12 @@ class DatasetsMixin(abc.ABC):
 
     def list_datasources(self, search_all_columns=None, page=None, page_size=None, sort=None,
                          filter=None):
-        self.__list_data_resources(jwt=self.token, resource_type='datasources', search_all_columns=search_all_columns,
+        return self.__list_data_resources(resource_type='datasources', search_all_columns=search_all_columns,
                                    page=page, page_size=page_size, sort=sort, filter=filter)
 
     def list_datasets(self, search_all_columns=None, page=None, page_size=None, sort=None,
                       filter=None):
-        self.__list_data_resources(jwt=self.token, resource_type='datasets', search_all_columns=search_all_columns,
+        return self.__list_data_resources(resource_type='datasets', search_all_columns=search_all_columns,
                                    page=page, page_size=page_size, sort=sort, filter=filter)
 
     def get_dataset(self, data_id):
@@ -97,14 +97,14 @@ class DatasetsMixin(abc.ABC):
         return self.post(query=api.format(dataset_id=dataset_id), data=data, params={'jwt': self.token},
                          query_prefix='datasets')
 
-    def get_feature_roles(self, data_id):
-        api = '{data_id}/meta'
-        return self.get(query=api.format(data_id=data_id), params={'jwt': self.token}, query_prefix='datasets')[
+    def get_feature_roles(self, dataset_id):
+        api = '{dataset_id}/meta'
+        return self.get(query=api.format(dataset_id=dataset_id), params={'jwt': self.token}, query_prefix='datasets')[
             'feature_roles']
 
-    def get_transformations(self, data_id):
+    def get_transformations(self, dataset_id):
         api = '{data_id}/meta'
-        return self.get(query=api.format(data_id=data_id), params={'jwt': self.token}, query_prefix='datasets')[
+        return self.get(query=api.format(data_id=dataset_id), params={'jwt': self.token}, query_prefix='datasets')[
             'transformations']
 
     def prepare_data(self, data_id, dataset_name, problem_type='classification', header=False,
