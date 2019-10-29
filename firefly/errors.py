@@ -3,6 +3,7 @@ import logging
 
 logger = logging.getLogger('clients')
 
+
 class FireflyClientError(Exception, abc.ABC):
     MESSAGE = "Please contact support"
 
@@ -32,4 +33,11 @@ class ErrorCodes:
 
 
 class ServiceException(Exception):
+    pass
+
+
+class DSClientException(FireflyClientError):
+    pass
+
+class UMClientException(FireflyClientError):
     pass

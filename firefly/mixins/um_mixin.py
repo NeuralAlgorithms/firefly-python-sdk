@@ -1,10 +1,4 @@
-import abc
-
-from firefly.errors import FireflyClientError
-
-
-class UMClientException(FireflyClientError):
-    pass
+from firefly.errors import *
 
 
 class UMMixin(abc.ABC):
