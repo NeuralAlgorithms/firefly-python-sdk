@@ -81,22 +81,6 @@ class DatasetsMixin(abc.ABC):
                   }
         return self.get(query=api, params=params, query_prefix=resource_type)
 
-    def calc_feature_importance(self, dataset_id):
-        api = '{dataset_id}/feature_importance'
-        return self.post(query=api.format(dataset_id=dataset_id), params={'jwt': self.token}, query_prefix='datasets')
-
-    def get_feature_importance(self, dataset_id):
-        api = '{dataset_id}/feature_importance'
-        return self.get(query=api.format(dataset_id=dataset_id), params={'jwt': self.token}, query_prefix='datasets')
-
-    def set_feature_importance(self, dataset_id, algo, feature_importance):
-        api = '{dataset_id}/set_feature_importance'
-        data = {
-            algo: feature_importance
-        }
-        return self.post(query=api.format(dataset_id=dataset_id), data=data, params={'jwt': self.token},
-                         query_prefix='datasets')
-
     def get_feature_roles(self, dataset_id):
         api = '{dataset_id}/meta'
         return self.get(query=api.format(dataset_id=dataset_id), params={'jwt': self.token}, query_prefix='datasets')[
