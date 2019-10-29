@@ -6,7 +6,7 @@ from flask_log_request_id import current_request_id
 from firefly import logger, ENDPOINT
 from firefly.errors import FireflyClientError, ServiceException
 from firefly.mixins.datasets_mixin import DatasetsMixin
-from firefly.mixins.models_mixin import ModelsMixin
+from firefly.mixins.tasks_mixin import TasksMixin
 from firefly.mixins.um_mixin import UMMixin
 
 
@@ -128,7 +128,7 @@ class _BaseClient:
             return sorts
 
 
-class Client(_BaseClient, UMMixin, DatasetsMixin, ModelsMixin):
+class Client(_BaseClient, UMMixin, DatasetsMixin, TasksMixin):
     def __init__(self, username, password, endpoint=ENDPOINT, port=443, use_https=True):
         super().__init__(endpoint=endpoint, port=port, use_https=use_https)
         self.token = self.login(username, password)['token']

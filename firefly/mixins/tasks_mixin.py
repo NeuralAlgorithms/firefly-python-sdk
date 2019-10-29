@@ -4,7 +4,7 @@ from collections import OrderedDict
 from firefly.errors import *
 
 
-class ModelsMixin(abc.ABC):
+class TasksMixin(abc.ABC):
 
     def get_task_record(self, task_id):
         api = '{task_id}'
