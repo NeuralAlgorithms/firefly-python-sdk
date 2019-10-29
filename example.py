@@ -1,12 +1,12 @@
 import firefly
 
-ffclient = firefly.Client(username='gilad@firefly.ai', password='Neur@lg0')
+ffclient = firefly.Client(username='gilad@firefly.ai', password='')
 
-#hal mixin
+# hal mixin
 ffclient.list_tasks()
 # ffclient.rerun_task(2631)
-print(ffclient.get_task_record(2631))
-print(ffclient.get_task_progress(2631))
+# print(ffclient.get_task_record(2631))
+# print(ffclient.get_task_progress(2631))
 # DS mixin
 # print(ffclient.list_datasets())
 # print(ffclient.list_datasources())
