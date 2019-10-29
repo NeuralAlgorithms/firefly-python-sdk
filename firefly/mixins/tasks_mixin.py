@@ -106,7 +106,7 @@ class TasksMixin(abc.ABC):
     def resume_task(self, task_id):
         return self.__do_operation(op='resume', task_id=task_id)
 
-    def get_user_storage(self, jwt):
+    def get_user_storage(self):
         api = 'storage'
         return self.get(query=api, params={'jwt': self.token}, query_prefix='tasks')
 
