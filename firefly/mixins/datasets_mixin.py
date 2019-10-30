@@ -1,6 +1,13 @@
+import os
+import time
+
+import boto3
+import pandas as pd
 import requests
 
 from firefly.errors import *
+
+FINITE_STATES = ['AVAILABLE', 'CREATED', 'CANCELED', 'FAILED']
 
 
 class DatasetsMixin(abc.ABC):
@@ -16,12 +23,12 @@ class DatasetsMixin(abc.ABC):
     def list_datasources(self, search_all_columns=None, page=None, page_size=None, sort=None,
                          filter=None):
         return self.__list_data_resources(resource_type='datasources', search_all_columns=search_all_columns,
-                                   page=page, page_size=page_size, sort=sort, filter=filter)
+                                          page=page, page_size=page_size, sort=sort, filter=filter)
 
     def list_datasets(self, search_all_columns=None, page=None, page_size=None, sort=None,
                       filter=None):
         return self.__list_data_resources(resource_type='datasets', search_all_columns=search_all_columns,
-                                   page=page, page_size=page_size, sort=sort, filter=filter)
+                                          page=page, page_size=page_size, sort=sort, filter=filter)
 
     def get_dataset(self, data_id):
         api = '{data_id}'
@@ -94,7 +101,7 @@ class DatasetsMixin(abc.ABC):
     def prepare_data(self, data_id, dataset_name, problem_type='classification', header=False,
                      na_values=None, retype_columns=None, rename_columns=None, datetime_format=None, target=None,
                      time_axis=None, block_id=None, sample_id=None, subdataset_id=None, sample_weight=None,
-                     not_used=None, hidden=False):
+                     not_used=None, hidden=False, wait=False):
         api = ''
         data = {
             "name": dataset_name,
@@ -114,7 +121,10 @@ class DatasetsMixin(abc.ABC):
             "not_used": not_used,
             "rename_columns": rename_columns
         }
-        return self.post(query=api, data=data, params={'jwt': self.token}, query_prefix='datasets')
+        id = self.post(query=api, data=data, params={'jwt': self.token}, query_prefix='datasets')
+        if wait:
+            self.__wait_for_finite_state(id, self.get_dataset())
+        return id
 
     def copy_data_preparation(self, prepared_id, raw_id, job='refit', callback_payload=None, predict_params=None):
         api = '{prepared_id}/{raw_id}/{job}'
@@ -130,12 +140,6 @@ class DatasetsMixin(abc.ABC):
     def get_upload_details(self):
         api = 'upload/details'
         return self.post(query=api, params={'jwt': self.token}, query_prefix='datasources')
-
-    def add_data_resource(self, dataset_name, filename, analyze=True, na_values=None):
-        DeprecationWarning(
-            'please use the create function instead. this function will be removed in future versions')
-        return self.create(jwt=self.token, name=dataset_name, filename=filename, analyze=analyze, na_values=na_values,
-                           query_prefix='datasources')
 
     def create(self, name, filename, analyze=True, na_values=None):
         api = ''
@@ -171,3 +175,27 @@ class DatasetsMixin(abc.ABC):
         api = '{datasource_id}/metadata/na_values'
         return self.get(query=api.format(datasource_id=datasource_id), params={'jwt': self.token},
                         query_prefix='datasources')
+
+    def upload(self, filename, wait=False):
+        dataset = os.path.basename(filename)
+        upload_details = self.get_upload_details()
+
+        s3c = boto3.client('s3', region_name=upload_details['region'],
+                           aws_access_key_id=upload_details['access_key'],
+                           aws_secret_access_key=upload_details['secret_key'],
+                           aws_session_token=upload_details['session_token'])
+
+        s3c.upload_file(filename, upload_details['bucket'], os.path.join(upload_details['path'], dataset))
+
+        id = self.create(name=dataset, filename=dataset, analyze=True)
+        if wait:
+            self.__wait_for_finite_state(id, self.get_datasource)
+        return id
+
+    def __wait_for_finite_state(self, data_id, getter):
+        res = getter(data_id)
+        state = res['state']
+        while (state not in FINITE_STATES):
+            time.sleep(5)
+            res = getter(data_id)
+            state = res['state']
