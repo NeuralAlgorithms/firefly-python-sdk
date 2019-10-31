@@ -1,3 +1,4 @@
+import io
 import os
 import time
 
@@ -188,6 +189,32 @@ class DatasetsMixin(abc.ABC):
         s3c.upload_file(filename, upload_details['bucket'], os.path.join(upload_details['path'], dataset))
 
         id = self.create(name=dataset, filename=dataset, analyze=True)
+        if wait:
+            self.__wait_for_finite_state(id, self.get_datasource)
+        return id
+
+    def upload_df(self, df, data_source_name, wait=False):
+
+        upload_details = self.get_upload_details()
+
+        csv_buffer = io.StringIO()
+        df.to_csv(csv_buffer, index=False)
+
+        session = boto3.Session(
+            region_name=upload_details['region'],
+            aws_access_key_id=upload_details['access_key'],
+            aws_secret_access_key=upload_details['secret_key'],
+            aws_session_token=upload_details['session_token'])
+
+        s3_resource = session.resource('s3')
+
+        filename = data_source_name if data_source_name.endswith('.csv') else data_source_name + ".csv"
+        s3_resource.Bucket(upload_details['bucket']).put_object(
+            Key=upload_details['path'] + '/' + filename
+            ,
+            Body=csv_buffer.getvalue()
+        )
+        id = self.create(name=filename, filename=filename, analyze=True)
         if wait:
             self.__wait_for_finite_state(id, self.get_datasource)
         return id
