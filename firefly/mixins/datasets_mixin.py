@@ -142,7 +142,7 @@ class DatasetsMixin(abc.ABC):
         api = 'upload/details'
         return self.post(query=api, params={'jwt': self.token}, query_prefix='datasources')
 
-    def create(self, name, filename, analyze=True, na_values=None):
+    def create_datasource(self, name, filename, analyze=True, na_values=None):
         api = ''
         data = {
             "name": name,

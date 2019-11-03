@@ -39,7 +39,7 @@ class TasksMixin(abc.ABC):
         api = '{task_id}'
         return self.delete(query=api.format(task_id=task_id), params={'jwt': self.token}, query_prefix='tasks')
 
-    def create(self, name, estimators, target_metric,
+    def train(self, name, estimators, target_metric,
                dataset_id, splitting_strategy, notes=None, ensemble_size=None,
                max_models_num=None,
                single_model_timeout=None,
