@@ -189,7 +189,7 @@ class DatasetsMixin(abc.ABC):
         s3c.upload_file(filename, upload_details['bucket'], os.path.join(upload_details['path'], dataset))
 
         try:
-            id = self.create(name=dataset, filename=dataset, analyze=True)
+            id = self.create_datasource(name=dataset, filename=dataset, analyze=True)
         except FireflyClientError as e:
             pass #TODO
         if wait:
@@ -217,7 +217,7 @@ class DatasetsMixin(abc.ABC):
             ,
             Body=csv_buffer.getvalue()
         )
-        id = self.create(name=filename, filename=filename, analyze=True)
+        id = self.create_datasource(name=filename, filename=filename, analyze=True)
         if wait:
             self.__wait_for_finite_state(id, self.get_datasource)
         return id
