@@ -124,7 +124,7 @@ class DatasetsMixin(abc.ABC):
         }
         id = self.post(query=api, data=data, params={'jwt': self.token}, query_prefix='datasets')
         if wait:
-            self.__wait_for_finite_state(id, self.get_dataset())
+            self.__wait_for_finite_state(data_id=id, getter=self.get_dataset)
         return id
 
     def copy_data_preparation(self, prepared_id, raw_id, job='refit', callback_payload=None, predict_params=None):
@@ -177,7 +177,7 @@ class DatasetsMixin(abc.ABC):
         return self.get(query=api.format(datasource_id=datasource_id), params={'jwt': self.token},
                         query_prefix='datasources')
 
-    def upload(self, filename, wait=False):
+    def upload(self, filename, wait=False, override=False):
         dataset = os.path.basename(filename)
         upload_details = self.get_upload_details()
 
@@ -188,12 +188,15 @@ class DatasetsMixin(abc.ABC):
 
         s3c.upload_file(filename, upload_details['bucket'], os.path.join(upload_details['path'], dataset))
 
-        id = self.create(name=dataset, filename=dataset, analyze=True)
+        try:
+            id = self.create(name=dataset, filename=dataset, analyze=True)
+        except FireflyClientError as e:
+            pass #TODO
         if wait:
             self.__wait_for_finite_state(id, self.get_datasource)
         return id
 
-    def upload_df(self, df, data_source_name, wait=False):
+    def upload_df(self, df, data_source_name, wait=False, override=False):
 
         upload_details = self.get_upload_details()
 
