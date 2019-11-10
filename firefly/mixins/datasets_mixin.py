@@ -39,10 +39,6 @@ class DatasetsMixin(abc.ABC):
         api = '{data_id}'
         return self.get(api.format(data_id=data_id), params={'jwt': self.token}, query_prefix='datasources')
 
-    def get_download_details(self):
-        api = 'download/details'
-        return self.get(api, query_prefix='', params={'jwt': self.token})
-
     def get_data_head(self, data_id, rows):
         api = '{data_id}/head'
         return self.get(query=api.format(data_id=data_id, rows=rows), query_prefix='datasources',
@@ -102,7 +98,7 @@ class DatasetsMixin(abc.ABC):
     def prepare_data(self, data_id, dataset_name, problem_type='classification', header=False,
                      na_values=None, retype_columns=None, rename_columns=None, datetime_format=None, target=None,
                      time_axis=None, block_id=None, sample_id=None, subdataset_id=None, sample_weight=None,
-                     not_used=None, hidden=False, wait=False):
+                     not_used=None, hidden=False, wait=False, overwrite=False):
         api = ''
         data = {
             "name": dataset_name,
@@ -177,7 +173,7 @@ class DatasetsMixin(abc.ABC):
         return self.get(query=api.format(datasource_id=datasource_id), params={'jwt': self.token},
                         query_prefix='datasources')
 
-    def upload(self, filename, wait=False, override=False):
+    def upload(self, filename, wait=False, overwrite=False):
         dataset = os.path.basename(filename)
         upload_details = self.get_upload_details()
 
@@ -191,12 +187,15 @@ class DatasetsMixin(abc.ABC):
         try:
             id = self.create_datasource(name=dataset, filename=dataset, analyze=True)
         except FireflyClientError as e:
-            pass #TODO
+            if overwrite:
+                id = self.get_datasources_by_name(dataset)[0]['id']
+            else:
+                raise e
         if wait:
             self.__wait_for_finite_state(id, self.get_datasource)
         return id
 
-    def upload_df(self, df, data_source_name, wait=False, override=False):
+    def upload_df(self, df, data_source_name, wait=False, overwrite=False):
 
         upload_details = self.get_upload_details()
 
@@ -217,7 +216,10 @@ class DatasetsMixin(abc.ABC):
             ,
             Body=csv_buffer.getvalue()
         )
-        id = self.create_datasource(name=filename, filename=filename, analyze=True)
+        try:
+            id = self.create_datasource(name=filename, filename=filename, analyze=True)
+        except FireflyClientError as e:
+            pass
         if wait:
             self.__wait_for_finite_state(id, self.get_datasource)
         return id
@@ -225,7 +227,15 @@ class DatasetsMixin(abc.ABC):
     def __wait_for_finite_state(self, data_id, getter):
         res = getter(data_id)
         state = res['state']
-        while (state not in FINITE_STATES):
+        while state not in FINITE_STATES:
             time.sleep(5)
             res = getter(data_id)
             state = res['state']
+
+    def get_datasources_by_name(self, datasource_name):
+        ds = self.list_datasources(filter={'name': [datasource_name]})
+        return ds['hits']
+
+    def get_datasets_by_name(self, dataset_name):
+        ds = self.list_datasets(filter={'name': [dataset_name]})
+        return ds['hits']
