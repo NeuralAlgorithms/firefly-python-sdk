@@ -93,6 +93,22 @@ class TasksMixin(abc.ABC):
 
         return result
 
+    def refit(self, task_id, data_id, wait=False):
+        data = {
+            "datasource_id": data_id,
+        }
+        ensemble_id = self.get_task_record(task_id).get('ensemble_id')
+        api = '{ensemble_id}/refit'
+        result =  self.post(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token},
+                         data=data)
+        if wait:
+            self.__wait_for_finite_state(task_id, self.get_task_record)
+
+
+    def cancel_ensemble_refit(self, ensemble_id):
+        api = '{ensemble_id}/cancel'
+        return self.post(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token})
+
     def get_task_result(self, task_id):
         api = '{task_id}/results'
         return self.get(api.format(task_id=task_id), params={'jwt': self.token}, query_prefix='tasks')

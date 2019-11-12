@@ -76,18 +76,6 @@ class EnsemblesMixin(abc.ABC):
         rep = self.get(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token})
         return rep
 
-    def refit_ensemble(self, ensemble_id, data_id):
-        data = {
-            "datasource_id": data_id,
-        }
-        api = '{ensemble_id}/refit'
-        return self.post(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token},
-                         data=data)
-
-    def cancel_ensemble_refit(self, ensemble_id):
-        api = '{ensemble_id}/cancel'
-        return self.post(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token})
-
     def generate_export_download_link(self, ensemble_id):
         api = "{ensemble_id}/download"
         return self.post(api.format(ensemble_id=ensemble_id), params={'jwt': self.token}, query_prefix='ensembles')
@@ -104,4 +92,3 @@ class EnsemblesMixin(abc.ABC):
     def rerun_export(self, ensemble_id):
         api = "{ensemble_id}/rerun"
         return self.post(api.format(ensemble_id=ensemble_id), params={'jwt': self.token}, query_prefix='exports')
-
