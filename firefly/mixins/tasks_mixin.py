@@ -1,7 +1,9 @@
-
+import time
 from collections import OrderedDict
 
 from firefly.errors import *
+
+FINITE_STATES = ['COMPLETED', 'CREATED', 'CANCELED', 'FAILED', 'PAUSED']
 
 
 class TasksMixin(abc.ABC):
@@ -30,6 +32,10 @@ class TasksMixin(abc.ABC):
         params = {'prefix': task_prefix, 'jwt': self.token}
         return self.get(query=api, params=params, query_prefix='tasks')
 
+    def get_tasks_by_name(self, task_name):
+        ds = self.list_tasks(filter={'name': [task_name]})
+        return ds['hits']
+
     def edit_notes(self, task_id, notes):
         api = '{task_id}/notes'
         notes = {'notes': notes}
@@ -40,14 +46,19 @@ class TasksMixin(abc.ABC):
         return self.delete(query=api.format(task_id=task_id), params={'jwt': self.token}, query_prefix='tasks')
 
     def train(self, name, estimators, target_metric,
-               dataset_id, splitting_strategy, notes=None, ensemble_size=None,
-               max_models_num=None,
-               single_model_timeout=None,
-               pipeline=None, prediction_latency=None, interpretability_level=None, timeout=None,
-               cost_matrix_weights=None, train_size=None, test_size=None, validation_size=None, fold_size=None,
-               n_folds=None,
-               horizon=None, validation_strategy=None, cv_strategy=None, forecast_horizon=None, model_life_time=None,
-               refit_on_all=None):
+              dataset_id, splitting_strategy, notes=None, ensemble_size=None,
+              max_models_num=None,
+              single_model_timeout=None,
+              pipeline=None, prediction_latency=None, interpretability_level=None, timeout=None,
+              cost_matrix_weights=None, train_size=None, test_size=None, validation_size=None, fold_size=None,
+              n_folds=None,
+              horizon=None, validation_strategy=None, cv_strategy=None, forecast_horizon=None, model_life_time=None,
+              refit_on_all=None, wait=False, skip_if_exists=False):
+
+        if skip_if_exists:
+            ids = self.get_tasks_by_name(name)
+            if ids:
+                return ids[0]['id']
         api = ''
         task_config = {
             'dataset_id': dataset_id,
@@ -76,7 +87,11 @@ class TasksMixin(abc.ABC):
             'notes': notes,
             'refit_on_all': refit_on_all
         }
-        return self.post(api, data=task_config, params={'jwt': self.token}, query_prefix='tasks')
+        result = self.post(api, data=task_config, params={'jwt': self.token}, query_prefix='tasks').get('task_id')
+        if wait:
+            self.__wait_for_finite_state(task_id=result, getter=self.get_task_record)
+
+        return result
 
     def get_task_result(self, task_id):
         api = '{task_id}/results'
@@ -90,9 +105,6 @@ class TasksMixin(abc.ABC):
         api = '{task_id}/halixograph'
         return self.get(api.format(task_id=task_id), query_prefix='tasks',
                         params={'jwt': self.token, 'config_order': config_order})
-
-
-
 
     def rerun_task(self, task_id):
         return self.__do_operation(op='rerun', task_id=task_id)
@@ -160,3 +172,11 @@ class TasksMixin(abc.ABC):
             return self.delete_task(jwt=self.token, task_id=task_id)
         api = '{task_id}/{op}'
         return self.post(api.format(op=op, task_id=task_id), params={'jwt': self.token}, query_prefix='tasks')
+
+    def __wait_for_finite_state(self, task_id, getter):
+        res = getter(task_id)
+        state = res['state']
+        while state not in FINITE_STATES:
+            time.sleep(5)
+            res = getter(task_id)
+            state = res['state']
