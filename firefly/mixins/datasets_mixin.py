@@ -200,14 +200,16 @@ class DatasetsMixin(abc.ABC):
         return id
 
     def upload_df(self, df, data_source_name, wait=False, overwrite=False):
-        ids = self.get_datasources_by_name(data_source_name)
+
+        filename = data_source_name if data_source_name.endswith('.csv') else data_source_name + ".csv"
+        ids = self.get_datasources_by_name(filename)
         if ids and not overwrite:
             raise FireflyClientError("datasource with that name exists")
 
         csv_buffer = io.StringIO()
         df.to_csv(csv_buffer, index=False)
 
-        filename = self.__s3_upload_stream(csv_buffer, data_source_name)
+        self.__s3_upload_stream(csv_buffer, filename)
 
         if ids:
             id = ids[0]['id']
@@ -226,7 +228,7 @@ class DatasetsMixin(abc.ABC):
                            aws_session_token=upload_details['session_token'])
         s3c.upload_file(filename, upload_details['bucket'], os.path.join(upload_details['path'], dataset))
 
-    def __s3_upload_stream(self, csv_buffer, data_source_name):
+    def __s3_upload_stream(self, csv_buffer, filename):
         upload_details = self.get_upload_details()
         session = boto3.Session(
             region_name=upload_details['region'],
@@ -234,13 +236,11 @@ class DatasetsMixin(abc.ABC):
             aws_secret_access_key=upload_details['secret_key'],
             aws_session_token=upload_details['session_token'])
         s3_resource = session.resource('s3')
-        filename = data_source_name if data_source_name.endswith('.csv') else data_source_name + ".csv"
         s3_resource.Bucket(upload_details['bucket']).put_object(
             Key=upload_details['path'] + '/' + filename
             ,
             Body=csv_buffer.getvalue()
         )
-        return filename
 
     def __wait_for_finite_state(self, data_id, getter):
         res = getter(data_id)
