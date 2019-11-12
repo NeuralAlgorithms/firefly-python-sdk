@@ -106,7 +106,15 @@ class DatasetsMixin(abc.ABC):
     def prepare_data(self, data_id, dataset_name, problem_type='classification', header=False,
                      na_values=None, retype_columns=None, rename_columns=None, datetime_format=None, target=None,
                      time_axis=None, block_id=None, sample_id=None, subdataset_id=None, sample_weight=None,
-                     not_used=None, hidden=False, wait=False, overwrite=False):
+                     not_used=None, hidden=False, wait=False, skip_if_exists=False):
+
+        ids = self.get_datasets_by_name(dataset_name)
+        if ids:
+            if skip_if_exists:
+                return ids[0]['id']
+            else:
+                raise FireflyClientError("dataset with that name exists")
+
         api = ''
         data = {
             "name": dataset_name,
@@ -181,40 +189,40 @@ class DatasetsMixin(abc.ABC):
         return self.get(query=api.format(datasource_id=datasource_id), params={'jwt': self.token},
                         query_prefix='datasources')
 
-    def upload(self, filename, wait=False, overwrite=False):
+    def upload(self, filename, wait=False, skip_if_exists=False):
         dataset = os.path.basename(filename)
 
         ids = self.get_datasources_by_name(dataset)
-        if ids and not overwrite:
-            raise FireflyClientError("datasource with that name exists")
+        if ids:
+            if skip_if_exists:
+                return ids[0]['id']
+            else:
+                raise FireflyClientError("datasource with that name exists")
 
         self.__s3_upload(dataset, filename)
 
-        if ids:
-            id = ids[0]['id']
-        else:
-            id = self.create_datasource(name=dataset, filename=dataset, analyze=True)
+        id = self.create_datasource(name=dataset, filename=dataset, analyze=True)
 
         if wait:
             self.__wait_for_finite_state(id, self.get_datasource)
         return id
 
-    def upload_df(self, df, data_source_name, wait=False, overwrite=False):
+    def upload_df(self, df, data_source_name, wait=False, skip_if_exists=False):
 
         filename = data_source_name if data_source_name.endswith('.csv') else data_source_name + ".csv"
         ids = self.get_datasources_by_name(filename)
-        if ids and not overwrite:
-            raise FireflyClientError("datasource with that name exists")
+        if ids:
+            if skip_if_exists:
+                return ids[0]['id']
+            else:
+                raise FireflyClientError("datasource with that name exists")
 
         csv_buffer = io.StringIO()
         df.to_csv(csv_buffer, index=False)
 
         self.__s3_upload_stream(csv_buffer, filename)
 
-        if ids:
-            id = ids[0]['id']
-        else:
-            id = self.create_datasource(name=filename, filename=filename, analyze=True)
+        id = self.create_datasource(name=filename, filename=filename, analyze=True)
 
         if wait:
             self.__wait_for_finite_state(id, self.get_datasource)
