@@ -72,6 +72,14 @@ class DatasetsMixin(abc.ABC):
         api = '{data_id}/features_description'
         return self.get(query=api.format(data_id=data_id), params={'jwt': self.token}, query_prefix='datasources')
 
+    def get_datasources_by_name(self, datasource_name):
+        ds = self.list_datasources(filter={'name': [datasource_name]})
+        return ds['hits']
+
+    def get_datasets_by_name(self, dataset_name):
+        ds = self.list_datasets(filter={'name': [dataset_name]})
+        return ds['hits']
+
     def __list_data_resources(self, resource_type, search_all_columns=None, page=None, page_size=None, sort=None,
                               filter=None):
         api = ''
@@ -175,54 +183,64 @@ class DatasetsMixin(abc.ABC):
 
     def upload(self, filename, wait=False, overwrite=False):
         dataset = os.path.basename(filename)
-        upload_details = self.get_upload_details()
 
-        s3c = boto3.client('s3', region_name=upload_details['region'],
-                           aws_access_key_id=upload_details['access_key'],
-                           aws_secret_access_key=upload_details['secret_key'],
-                           aws_session_token=upload_details['session_token'])
+        ids = self.get_datasources_by_name(dataset)
+        if ids and not overwrite:
+            raise FireflyClientError("datasource with that name exists")
 
-        s3c.upload_file(filename, upload_details['bucket'], os.path.join(upload_details['path'], dataset))
+        self.__s3_upload(dataset, filename)
 
-        try:
+        if ids:
+            id = ids[0]['id']
+        else:
             id = self.create_datasource(name=dataset, filename=dataset, analyze=True)
-        except FireflyClientError as e:
-            if overwrite:
-                id = self.get_datasources_by_name(dataset)[0]['id']
-            else:
-                raise e
+
         if wait:
             self.__wait_for_finite_state(id, self.get_datasource)
         return id
 
     def upload_df(self, df, data_source_name, wait=False, overwrite=False):
-
-        upload_details = self.get_upload_details()
+        ids = self.get_datasources_by_name(data_source_name)
+        if ids and not overwrite:
+            raise FireflyClientError("datasource with that name exists")
 
         csv_buffer = io.StringIO()
         df.to_csv(csv_buffer, index=False)
 
+        filename = self.__s3_upload_stream(csv_buffer, data_source_name)
+
+        if ids:
+            id = ids[0]['id']
+        else:
+            id = self.create_datasource(name=filename, filename=filename, analyze=True)
+
+        if wait:
+            self.__wait_for_finite_state(id, self.get_datasource)
+        return id
+
+    def __s3_upload(self, dataset, filename):
+        upload_details = self.get_upload_details()
+        s3c = boto3.client('s3', region_name=upload_details['region'],
+                           aws_access_key_id=upload_details['access_key'],
+                           aws_secret_access_key=upload_details['secret_key'],
+                           aws_session_token=upload_details['session_token'])
+        s3c.upload_file(filename, upload_details['bucket'], os.path.join(upload_details['path'], dataset))
+
+    def __s3_upload_stream(self, csv_buffer, data_source_name):
+        upload_details = self.get_upload_details()
         session = boto3.Session(
             region_name=upload_details['region'],
             aws_access_key_id=upload_details['access_key'],
             aws_secret_access_key=upload_details['secret_key'],
             aws_session_token=upload_details['session_token'])
-
         s3_resource = session.resource('s3')
-
         filename = data_source_name if data_source_name.endswith('.csv') else data_source_name + ".csv"
         s3_resource.Bucket(upload_details['bucket']).put_object(
             Key=upload_details['path'] + '/' + filename
             ,
             Body=csv_buffer.getvalue()
         )
-        try:
-            id = self.create_datasource(name=filename, filename=filename, analyze=True)
-        except FireflyClientError as e:
-            pass
-        if wait:
-            self.__wait_for_finite_state(id, self.get_datasource)
-        return id
+        return filename
 
     def __wait_for_finite_state(self, data_id, getter):
         res = getter(data_id)
@@ -231,11 +249,3 @@ class DatasetsMixin(abc.ABC):
             time.sleep(5)
             res = getter(data_id)
             state = res['state']
-
-    def get_datasources_by_name(self, datasource_name):
-        ds = self.list_datasources(filter={'name': [datasource_name]})
-        return ds['hits']
-
-    def get_datasets_by_name(self, dataset_name):
-        ds = self.list_datasets(filter={'name': [dataset_name]})
-        return ds['hits']
