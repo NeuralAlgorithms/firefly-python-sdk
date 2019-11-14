@@ -12,14 +12,10 @@ ENDPOINT = 'api.firefly.ai'
 class ProblemTypes(Enum):
     CLASSIFICATION = 'classification'
     REGRESSION = 'regression'
-    # classification = 0
-    # recommendation = 1
-    # regression = 2
-    # timeseries = 3
-    # anomaly_detection = 4
-    # multivariate_timeseries = 5
-    # classification_timeseries = 6
-    # anomaly_timeseries = 7
-    # regression_timeseries = 8
+    ANOMALY_DETECTION = 'anomaly_detection'
+    TIMESERIES_CALSSIFICATION = 'classification_timeseries'
+    TIMESERIES_REGRESSION = 'regression_timeseries'
+    TIMESERIES_ANOMALY_DETECTION = 'anomaly_timeseries'
+
 
 from firefly.client import Client

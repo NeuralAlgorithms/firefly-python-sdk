@@ -33,8 +33,8 @@ class TasksMixin(abc.ABC):
         return self.get(query=api, params=params, query_prefix='tasks')
 
     def get_tasks_by_name(self, task_name):
-        ds = self.list_tasks(filter={'name': [task_name]})
-        return ds['hits']
+        tasks = self.list_tasks(filter={'name': [task_name]})
+        return tasks['hits']
 
     def edit_notes(self, task_id, notes):
         api = '{task_id}/notes'
