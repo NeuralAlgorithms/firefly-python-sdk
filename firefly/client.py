@@ -34,6 +34,8 @@ class _BaseClient:
         raise FireflyClientError(response.json()['error'])
 
     def unhandled(self, response):
+        if response.status_code == 401:
+            raise FireflyClientError("token expired.")  # todo retry after renew
         try:
             raise ServiceException(response.json().get('error') or response.json().get('message'))
         except ValueError:
