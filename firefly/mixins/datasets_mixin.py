@@ -7,6 +7,7 @@ import pandas as pd
 import requests
 
 from firefly.errors import *
+from firefly.enums import *
 
 FINITE_STATES = ['AVAILABLE', 'CREATED', 'CANCELED', 'FAILED']
 
@@ -103,7 +104,7 @@ class DatasetsMixin(abc.ABC):
         return self.get(query=api.format(data_id=dataset_id), params={'jwt': self.token}, query_prefix='datasets')[
             'transformations']
 
-    def prepare_data(self, data_id, dataset_name, problem_type='classification', header=False,
+    def prepare_data(self, data_id, dataset_name, problem_type: ProblemType=ProblemType.CLASSIFICATION, header=False,
                      na_values=None, retype_columns=None, rename_columns=None, datetime_format=None, target=None,
                      time_axis=None, block_id=None, sample_id=None, subdataset_id=None, sample_weight=None,
                      not_used=None, hidden=False, wait=False, skip_if_exists=False):
@@ -120,7 +121,7 @@ class DatasetsMixin(abc.ABC):
             "name": dataset_name,
             "data_id": data_id,
             "header": header,
-            "problem_type": problem_type,
+            "problem_type": extract_value_from_enum(problem_type),
             "hidden": hidden,
             "na_values": na_values,
             "retype_columns": retype_columns,

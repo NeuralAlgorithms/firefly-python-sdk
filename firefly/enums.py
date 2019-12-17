@@ -5,6 +5,12 @@ class Enum(enum.Enum):
     pass
 
 
+def extract_value_from_enum(obj, def_ret=None):
+    if obj is not None:
+        return obj.value
+    return def_ret
+
+
 class Pipeline(Enum):
     DATA_CLEANING_POST_IMPUTATION = 'data_cleaning_post_imputation'
     TIME_SERIES_AUTO_FEATURES = 'time_series_auto_features'
@@ -254,17 +260,18 @@ class SplittingStrategy(Enum):
 
 
 class ValidationStrategy(Enum):
-    pass
+    HOLDOUT = 'holdout'
+    CROSS_VALIDATION = 'cv'
 
 
 class CVStrategy(Enum):
-    pass
+    AVERAGE_MODELS = 'average_models'
+    LAST_MODEL = 'last_model'
 
 
-class Preset(Enum):
-    SIMPLE = 'simple'
-    PRECISE = 'precise'
-    CUSTOM = 'custom'
+class InterpretabilityLevel(Enum):
+    EXPLAINABLE = 2
+    PRECISE = 0
 
 
 class ProblemType(Enum):
