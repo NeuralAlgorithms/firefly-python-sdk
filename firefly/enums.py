@@ -1,14 +1,4 @@
-import enum
-
-
-class Enum(enum.Enum):
-    pass
-
-
-def extract_value_from_enum(obj, def_ret=None):
-    if obj is not None:
-        return obj.value
-    return def_ret
+from enum import Enum
 
 
 class Pipeline(Enum):
@@ -288,14 +278,3 @@ class FeatureType(Enum):
     NUMERICAL = 'numerical'
     TEXT = 'text'
     DATETIME = 'datetime'
-
-
-class FeatureRole(Enum):
-    data = 'data'
-    target = 'target'
-    do_not_use = 'do_not_use'
-    row_identifier = 'row_identifier'
-    time_axis = 'time_axis'
-    subproblem_id = 'subproblem_id'
-    block_id = 'block_id'
-    y_lag = 'y_lag'
