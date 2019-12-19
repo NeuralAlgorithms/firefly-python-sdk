@@ -1,12 +1,14 @@
 import io
 import os
 import time
+from typing import Dict
 
 import boto3
 import pandas as pd
 import requests
 
 from firefly.errors import *
+from firefly.enums import *
 
 FINITE_STATES = ['AVAILABLE', 'CREATED', 'CANCELED', 'FAILED']
 
@@ -103,10 +105,11 @@ class DatasetsMixin(abc.ABC):
         return self.get(query=api.format(data_id=dataset_id), params={'jwt': self.token}, query_prefix='datasets')[
             'transformations']
 
-    def prepare_data(self, data_id, dataset_name, problem_type='classification', header=False,
-                     na_values=None, retype_columns=None, rename_columns=None, datetime_format=None, target=None,
-                     time_axis=None, block_id=None, sample_id=None, subdataset_id=None, sample_weight=None,
-                     not_used=None, hidden=False, wait=False, skip_if_exists=False):
+    def prepare_data(self, data_id: int, dataset_name: str, target: str, problem_type: ProblemType, header: bool,
+                     na_values=None,
+                     retype_columns: Dict[str, FeatureType] = None, rename_columns=None,
+                     datetime_format=None, time_axis=None, block_id=None, sample_id=None, subdataset_id=None,
+                     sample_weight=None, not_used=None, hidden=False, wait=False, skip_if_exists=False):
 
         ids = self.get_datasets_by_name(dataset_name)
         if ids:
@@ -120,10 +123,11 @@ class DatasetsMixin(abc.ABC):
             "name": dataset_name,
             "data_id": data_id,
             "header": header,
-            "problem_type": problem_type,
+            "problem_type": problem_type.value if problem_type is not None else None,
             "hidden": hidden,
             "na_values": na_values,
-            "retype_columns": retype_columns,
+            "retype_columns": {key: retype_columns[key].value for key in
+                               retype_columns} if retype_columns is not None else None,
             "datetime_format": datetime_format,
             "target": target,
             "time_axis": time_axis,
