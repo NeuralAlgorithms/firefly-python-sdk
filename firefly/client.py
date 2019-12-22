@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 import requests
+from requests import Response
 from flask_log_request_id import current_request_id
 
 from firefly import logger, ENDPOINT
@@ -13,21 +14,22 @@ from firefly.mixins.um_mixin import UMMixin
 
 
 class _BaseClient:
-    def __init__(self, endpoint, port, http=requests, timeout=None, use_https=True):
+
+    def __init__(self, endpoint: str, port: int, timeout: int = None, use_https: bool = True) -> None:
         self.query_prefix = ''
         self.endpoint = endpoint
         self.port = port
-        self.http_client = http
+        self.http_client = requests  # using a default client - 'requests'
         self.timeout = timeout
         self.protocol = 'https' if use_https else 'http'
 
-    def set_endpoint(self, endpoint):
+    def set_endpoint(self, endpoint: str) -> None:
         self.endpoint = endpoint
 
-    def set_port(self, port):
+    def set_port(self, port: int) -> None:
         self.port = port
 
-    def ok(self, response):
+    def ok(self, response: Response):
         return response.json().get('result', response.json())
 
     def handled(self, response):
@@ -133,7 +135,20 @@ class _BaseClient:
 
 
 class Client(_BaseClient, UMMixin, DatasetsMixin, TasksMixin, EnsemblesMixin, PredictionsMixin):
-    def __init__(self, username, password, endpoint=ENDPOINT, port=443, use_https=True):
+
+    def __init__(self, username: str, password: str, endpoint: str = ENDPOINT, port: int = 443,
+                 use_https: bool = True) -> None:
+        """
+        Initializes a client with an open JWT for a specific user.
+
+        Calls UMMixin's function `login` in order to get the token from the server, and stores it as a local variable `token`.
+        Args:
+            username (str): The username to login with.
+            password (str): User's password as plain test.
+            endpoint (Optional[str]): Server's base endpoint, defaults to 'api.firefly.ai'.
+            port (Optional[int]): Port to connect to the server, default to 443.
+            use_https (Optional[bool]): Whether to use HTTPS for requests, defaults to True.
+        """
         super().__init__(endpoint=endpoint, port=port, use_https=use_https)
         logger.debug("Verifying credentials...")
         self.token = self.login(username, password)['token']
