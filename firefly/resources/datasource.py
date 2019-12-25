@@ -1,9 +1,11 @@
 import io
 import os
-from typing import Dict
+from typing import Dict, List
 
+import firefly
 from firefly import utils
 from firefly.api_requestor import APIRequestor
+from firefly.enums import FeatureType, ProblemType
 from firefly.errors import APIError
 from firefly.firefly_response import FireflyResponse
 from firefly.resources.api_resource import APIResource
@@ -14,7 +16,7 @@ class Datasource(APIResource):
 
     @classmethod
     def list(cls, search_term: str = None, page: int = None, page_size: int = None, sort: Dict = None,
-              filter_: Dict = None, api_key: str = None) -> FireflyResponse:
+             filter_: Dict = None, api_key: str = None) -> FireflyResponse:
         """
         List the existing datasources. Supports filtering, sorting and pagination.
 
@@ -69,7 +71,6 @@ class Datasource(APIResource):
         else:
             raise APIError("Datasource with that name does not exist")
 
-
     @classmethod
     def delete(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
@@ -97,7 +98,7 @@ class Datasource(APIResource):
             api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
 
         Returns:
-            FireflyResponse: Datasource ID if successful, raises FireflyError otherwise.
+            FireflyResponse: Datasource ID if successful or datasource data if wait=True, raises FireflyError otherwise.
         """
         data_source_name = os.path.basename(filename)
 
@@ -106,7 +107,7 @@ class Datasource(APIResource):
             if skip_if_exists:
                 return FireflyResponse(data=existing_ds['hits'][0])
             else:
-                raise APIError("Datasource with that name exists")
+                raise APIError("Datasource with that name already exists")
 
         aws_credentials = cls.__get_upload_details(api_key=api_key)
         utils.s3_upload(data_source_name, filename, aws_credentials.to_dict())
@@ -212,6 +213,48 @@ class Datasource(APIResource):
         url = '{prefix}/{id}/data_types/warning'.format(prefix=cls.CLASS_PREFIX, id=id)
         response = requestor.get(url, api_key=api_key)
         return response
+
+    @classmethod
+    def prepare_data(cls, datasource_id: int, dataset_name: str, target: str, problem_type: ProblemType, header: bool,
+                     na_values: List[str] = None, retype_columns: Dict[str, FeatureType] = None,
+                     rename_columns: List[str] = None, datetime_format: str = None, time_axis: str = None,
+                     block_id: List[str] = None, sample_id: List[str] = None, subdataset_id: List[str] = None,
+                     sample_weight: List[str] = None, not_used: List[str] = None, hidden: List[str] = False,
+                     wait: bool = False, skip_if_exists: bool = False, api_key: str = None) -> FireflyResponse:
+        """
+        Creates and prepares a dataset.
+
+        When creating a dataset the feature roles are labled and the feature types can be set by the user.
+        Data analysis is done in order to optimize the model training and search process.
+
+        Args:
+            datasource_id (int): Datasource ID.
+            dataset_name (str): The name of the dataset in the application.
+            target (str): The feature name of the target if the header parameter is true, otherwise the column index.
+            problem_type (ProblemType): The problem type.
+            header (bool): Does to file include a header row or not.
+            na_values (Optional[List[str]]): List of na values.
+            retype_columns (Dict[str, FeatureType]): Change the chosen type of certain columns.
+            rename_columns (Optional[List[str]]): ???
+            datetime_format (Optional[str]): The date time format used in the data.
+            time_axis (Optional[str]): In timeseries, the feature that is the time axis.
+            block_id (Optional[List[str]]): To avoid data leakage, data can be splitted to blocks. Rows with the same
+                block id must be all in the train set or the test set. Requires to have at least 50 unique values.
+            sample_id (Optional[List[str]]): Row identifier.
+            subdataset_id (Optional[List[str]]): Features which specify a subdataset ID in the data.
+            sample_weight (Optional[List[str]]): ???
+            not_used (Optional[List[str]]): List of features to ignore.
+            hidden (Optional[List[str]]): ???
+            wait (Optional[bool]): Should call be synchronous or not.
+            skip_if_exists (Optional[bool]): Check if dataset with same name exists and skip if true.
+            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+
+        Returns:
+            FireflyResponse: Dataset ID if successful or dataset data if wait=True, raises FireflyError otherwise.
+        """
+        return firefly.Dataset.create(datasource_id, dataset_name, target, problem_type, header, na_values,
+                                      retype_columns, rename_columns, datetime_format, time_axis, block_id, sample_id,
+                                      subdataset_id, sample_weight, not_used, hidden, wait, skip_if_exists, api_key)
 
     @classmethod
     def __get_upload_details(cls, api_key: str = None):
