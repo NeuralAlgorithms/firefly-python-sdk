@@ -34,6 +34,8 @@ class _BaseClient:
         raise FireflyClientError(response.json()['error'])
 
     def unhandled(self, response):
+        if response.status_code == 401:
+            raise FireflyClientError("token expired.")  # todo retry after renew
         try:
             raise ServiceException(response.json().get('error') or response.json().get('message'))
         except ValueError:
@@ -133,4 +135,6 @@ class _BaseClient:
 class Client(_BaseClient, UMMixin, DatasetsMixin, TasksMixin, EnsemblesMixin, PredictionsMixin):
     def __init__(self, username, password, endpoint=ENDPOINT, port=443, use_https=True):
         super().__init__(endpoint=endpoint, port=port, use_https=use_https)
+        logger.debug("Verifying credentials...")
         self.token = self.login(username, password)['token']
+        logger.debug("Client created with valid credentials")

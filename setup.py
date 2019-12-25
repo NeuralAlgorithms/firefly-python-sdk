@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import io
 import os
 import sys
 
@@ -9,26 +8,31 @@ if sys.version_info < (3, 0):
 
 from setuptools import setup, find_packages
 
+here = os.path.abspath(os.path.dirname(__file__))
+version_contents = {}
 
-def read(fname):
-    return io.open(os.path.join(os.path.dirname(__file__), fname), encoding='utf-8').read()
+with open(os.path.join(here, "firefly", "version.py"), encoding="utf-8") as f:
+    exec(f.read(), version_contents)
 
-
-exec(open('firefly/version.py').read())
+with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
+    long_description = f.read()
 
 setup(
     name='firefly',
-    version=__version__,
-    description='Firefly python sdk',
-    long_description=read('README.md'),
-
-    packages=find_packages(),
+    version=version_contents["__version__"],
+    description='Python clients for Firefly API',
+    long_description=long_description,
+    author='Firefly.ai',
+    packages=find_packages(exclude=["tests", "tests.*"]),
 
     platforms='any',
 
     classifiers=[
         'Development Status :: 4 - Beta',
-        'Environment :: Console'
+        'Environment :: Console',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+
     ],
     tests_require=[
         'pytest==3.1.0',

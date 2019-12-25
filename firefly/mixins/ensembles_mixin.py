@@ -5,7 +5,9 @@ class EnsemblesMixin(abc.ABC):
 
     def get_model_sensitivity_report(self, ensemble_id):
         api = '{ensemble_id}/sensitivity'
-        return self.get(api.format(ensemble_id=ensemble_id), params={'jwt': self.token}, query_prefix='ensembles')
+        result = self.get(api.format(ensemble_id=ensemble_id), params={'jwt': self.token}, query_prefix='ensembles')
+        self.__cleanup_report(result)
+        return result
 
     def get_threshold_endpoints_report(self, ensemble_id):
         api = '{ensemble_id}/threshold_endpoints'
@@ -76,18 +78,6 @@ class EnsemblesMixin(abc.ABC):
         rep = self.get(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token})
         return rep
 
-    def refit_ensemble(self, ensemble_id, data_id):
-        data = {
-            "datasource_id": data_id,
-        }
-        api = '{ensemble_id}/refit'
-        return self.post(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token},
-                         data=data)
-
-    def cancel_ensemble_refit(self, ensemble_id):
-        api = '{ensemble_id}/cancel'
-        return self.post(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token})
-
     def generate_export_download_link(self, ensemble_id):
         api = "{ensemble_id}/download"
         return self.post(api.format(ensemble_id=ensemble_id), params={'jwt': self.token}, query_prefix='ensembles')
@@ -105,3 +95,13 @@ class EnsemblesMixin(abc.ABC):
         api = "{ensemble_id}/rerun"
         return self.post(api.format(ensemble_id=ensemble_id), params={'jwt': self.token}, query_prefix='exports')
 
+    def __cleanup_report(self, result):
+        if result:
+            if result.get('NA value', {}).get('_title'):
+                result['NA value'].pop('_title')
+            if result.get('NA value', {}).get('_description'):
+                result['NA value'].pop('_description')
+            if result.get('Permutation', {}).get('_title'):
+                result['Permutation'].pop('_title')
+            if result.get('Permutation', {}).get('_description'):
+                result['Permutation'].pop('_description')

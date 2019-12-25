@@ -1,12 +1,14 @@
 import io
 import os
 import time
+from typing import Dict
 
 import boto3
 import pandas as pd
 import requests
 
 from firefly.errors import *
+from firefly.enums import *
 
 FINITE_STATES = ['AVAILABLE', 'CREATED', 'CANCELED', 'FAILED']
 
@@ -38,10 +40,6 @@ class DatasetsMixin(abc.ABC):
     def get_datasource(self, data_id):
         api = '{data_id}'
         return self.get(api.format(data_id=data_id), params={'jwt': self.token}, query_prefix='datasources')
-
-    def get_download_details(self):
-        api = 'download/details'
-        return self.get(api, query_prefix='', params={'jwt': self.token})
 
     def get_data_head(self, data_id, rows):
         api = '{data_id}/head'
@@ -76,6 +74,14 @@ class DatasetsMixin(abc.ABC):
         api = '{data_id}/features_description'
         return self.get(query=api.format(data_id=data_id), params={'jwt': self.token}, query_prefix='datasources')
 
+    def get_datasources_by_name(self, datasource_name):
+        ds = self.list_datasources(filter={'name': [datasource_name]})
+        return ds['hits']
+
+    def get_datasets_by_name(self, dataset_name):
+        ds = self.list_datasets(filter={'name': [dataset_name]})
+        return ds['hits']
+
     def __list_data_resources(self, resource_type, search_all_columns=None, page=None, page_size=None, sort=None,
                               filter=None):
         api = ''
@@ -99,19 +105,29 @@ class DatasetsMixin(abc.ABC):
         return self.get(query=api.format(data_id=dataset_id), params={'jwt': self.token}, query_prefix='datasets')[
             'transformations']
 
-    def prepare_data(self, data_id, dataset_name, problem_type='classification', header=False,
-                     na_values=None, retype_columns=None, rename_columns=None, datetime_format=None, target=None,
-                     time_axis=None, block_id=None, sample_id=None, subdataset_id=None, sample_weight=None,
-                     not_used=None, hidden=False, wait=False):
+    def prepare_data(self, data_id: int, dataset_name: str, target: str, problem_type: ProblemType, header: bool,
+                     na_values=None,
+                     retype_columns: Dict[str, FeatureType] = None, rename_columns=None,
+                     datetime_format=None, time_axis=None, block_id=None, sample_id=None, subdataset_id=None,
+                     sample_weight=None, not_used=None, hidden=False, wait=False, skip_if_exists=False):
+
+        ids = self.get_datasets_by_name(dataset_name)
+        if ids:
+            if skip_if_exists:
+                return ids[0]['id']
+            else:
+                raise FireflyClientError("dataset with that name exists")
+
         api = ''
         data = {
             "name": dataset_name,
             "data_id": data_id,
             "header": header,
-            "problem_type": problem_type,
+            "problem_type": problem_type.value if problem_type is not None else None,
             "hidden": hidden,
             "na_values": na_values,
-            "retype_columns": retype_columns,
+            "retype_columns": {key: retype_columns[key].value for key in
+                               retype_columns} if retype_columns is not None else None,
             "datetime_format": datetime_format,
             "target": target,
             "time_axis": time_axis,
@@ -124,7 +140,7 @@ class DatasetsMixin(abc.ABC):
         }
         id = self.post(query=api, data=data, params={'jwt': self.token}, query_prefix='datasets')
         if wait:
-            self.__wait_for_finite_state(id, self.get_dataset())
+            self.__wait_for_finite_state(data_id=id, getter=self.get_dataset)
         return id
 
     def copy_data_preparation(self, prepared_id, raw_id, job='refit', callback_payload=None, predict_params=None):
@@ -142,7 +158,7 @@ class DatasetsMixin(abc.ABC):
         api = 'upload/details'
         return self.post(query=api, params={'jwt': self.token}, query_prefix='datasources')
 
-    def create(self, name, filename, analyze=True, na_values=None):
+    def create_datasource(self, name, filename, analyze=True, na_values=None):
         api = ''
         data = {
             "name": name,
@@ -177,52 +193,71 @@ class DatasetsMixin(abc.ABC):
         return self.get(query=api.format(datasource_id=datasource_id), params={'jwt': self.token},
                         query_prefix='datasources')
 
-    def upload(self, filename, wait=False):
+    def upload(self, filename, wait=False, skip_if_exists=False):
         dataset = os.path.basename(filename)
-        upload_details = self.get_upload_details()
 
-        s3c = boto3.client('s3', region_name=upload_details['region'],
-                           aws_access_key_id=upload_details['access_key'],
-                           aws_secret_access_key=upload_details['secret_key'],
-                           aws_session_token=upload_details['session_token'])
+        ids = self.get_datasources_by_name(dataset)
+        if ids:
+            if skip_if_exists:
+                return ids[0]['id']
+            else:
+                raise FireflyClientError("datasource with that name exists")
 
-        s3c.upload_file(filename, upload_details['bucket'], os.path.join(upload_details['path'], dataset))
+        self.__s3_upload(dataset, filename)
 
-        id = self.create(name=dataset, filename=dataset, analyze=True)
+        id = self.create_datasource(name=dataset, filename=dataset, analyze=True)
+
         if wait:
             self.__wait_for_finite_state(id, self.get_datasource)
         return id
 
-    def upload_df(self, df, data_source_name, wait=False):
+    def upload_df(self, df, data_source_name, wait=False, skip_if_exists=False):
 
-        upload_details = self.get_upload_details()
+        filename = data_source_name if data_source_name.endswith('.csv') else data_source_name + ".csv"
+        ids = self.get_datasources_by_name(filename)
+        if ids:
+            if skip_if_exists:
+                return ids[0]['id']
+            else:
+                raise FireflyClientError("datasource with that name exists")
 
         csv_buffer = io.StringIO()
         df.to_csv(csv_buffer, index=False)
 
+        self.__s3_upload_stream(csv_buffer, filename)
+
+        id = self.create_datasource(name=filename, filename=filename, analyze=True)
+
+        if wait:
+            self.__wait_for_finite_state(id, self.get_datasource)
+        return id
+
+    def __s3_upload(self, dataset, filename):
+        upload_details = self.get_upload_details()
+        s3c = boto3.client('s3', region_name=upload_details['region'],
+                           aws_access_key_id=upload_details['access_key'],
+                           aws_secret_access_key=upload_details['secret_key'],
+                           aws_session_token=upload_details['session_token'])
+        s3c.upload_file(filename, upload_details['bucket'], os.path.join(upload_details['path'], dataset))
+
+    def __s3_upload_stream(self, csv_buffer, filename):
+        upload_details = self.get_upload_details()
         session = boto3.Session(
             region_name=upload_details['region'],
             aws_access_key_id=upload_details['access_key'],
             aws_secret_access_key=upload_details['secret_key'],
             aws_session_token=upload_details['session_token'])
-
         s3_resource = session.resource('s3')
-
-        filename = data_source_name if data_source_name.endswith('.csv') else data_source_name + ".csv"
         s3_resource.Bucket(upload_details['bucket']).put_object(
             Key=upload_details['path'] + '/' + filename
             ,
             Body=csv_buffer.getvalue()
         )
-        id = self.create(name=filename, filename=filename, analyze=True)
-        if wait:
-            self.__wait_for_finite_state(id, self.get_datasource)
-        return id
 
     def __wait_for_finite_state(self, data_id, getter):
         res = getter(data_id)
         state = res['state']
-        while (state not in FINITE_STATES):
+        while state not in FINITE_STATES:
             time.sleep(5)
             res = getter(data_id)
             state = res['state']
