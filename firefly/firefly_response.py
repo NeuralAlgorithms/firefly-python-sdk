@@ -8,6 +8,9 @@ class FireflyResponse(object):
     def __repr__(self):
         return str(self._data)
 
+    def __contains__(self, item):
+        return item in self._data
+
     def get(self, key, default=None):
         return self._data.get(key, default)
 

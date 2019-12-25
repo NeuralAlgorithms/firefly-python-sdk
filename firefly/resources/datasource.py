@@ -48,6 +48,29 @@ class Datasource(APIResource):
         return cls._get(id, api_key)
 
     @classmethod
+    def get_by_name(cls, name: str, api_key: str = None) -> FireflyResponse:
+        """
+        Get information on a specific datasource, identified by its name.
+
+        Information includes the state of the datasource, and other basic attributes.
+        Similar to calling `firefly.Datasource.list(filters_={'name': [NAME]})`.
+
+        Args:
+            name (str): Datasource name.
+            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+
+        Returns:
+            FireflyResponse: Information about the datasource.
+        """
+        resp = cls.list(filter_={'name': [name]}, api_key=api_key)
+        if resp and 'total' in resp and resp['total'] > 0:
+            ds = resp['hits'][0]
+            return FireflyResponse(data=ds)
+        else:
+            raise APIError("Datasource with that name does not exist")
+
+
+    @classmethod
     def delete(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
         Delete a specific datasource.
