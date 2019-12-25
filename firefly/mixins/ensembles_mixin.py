@@ -5,28 +5,6 @@ from firefly.errors import *
 
 class EnsemblesMixin(abc.ABC):
 
-    def get_model_sensitivity_report(self, ensemble_id: int) -> Dict:
-        """
-        Gets the sensitivity report for a specific ensemble.
-
-        Contains each feature sensitivity score for missing values and feature value.
-
-        Args:
-            ensemble_id (int): Ensemble ID.
-
-        Returns:
-            Dict: Score for each feature in every sensitivity test.
-        """
-        api = '{ensemble_id}/sensitivity'
-        result = self.get(api.format(ensemble_id=ensemble_id), params={'jwt': self.token}, query_prefix='ensembles')
-        self.__cleanup_report(result)
-        return result
-
-    # TODO: what is this?
-    def get_threshold_endpoints_report(self, ensemble_id):
-        api = '{ensemble_id}/threshold_endpoints'
-        return self.get(api.format(ensemble_id=ensemble_id), params={'jwt': self.token}, query_prefix='ensembles')
-
     # TODO: needs more information
     def list_ensembles(self, page: int = None, page_size: int = None, sort: Dict[str, Union[str, int]] = None,
                        filter: Dict[str, Union[str, int]] = None) -> Dict:
@@ -96,33 +74,49 @@ class EnsemblesMixin(abc.ABC):
         return self.delete(query=api.format(ensemble_id=ensemble_id), params={'jwt': self.token},
                            query_prefix='ensembles')
 
-    # TODO: fill in
-    def calc_model_sensitivity(self, ensemble_id: int):
+    def generate_export_download_link(self, ensemble_id: int) -> str:
         """
-        ???
+        Get a link to download the ensemble.
 
         Args:
             ensemble_id (int): Ensemble ID.
 
         Returns:
-            ???
+            str: URL with which to download a TAR file containing the model.
         """
-        api = '{ensemble_id}/sensitivity'
-        return self.post(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token})
+        api = "{ensemble_id}/download"
+        return self.post(api.format(ensemble_id=ensemble_id), params={'jwt': self.token}, query_prefix='ensembles')
 
-    # TODO: fill in
-    def calc_threshold_endpoints(self, ensemble_id):
+    ###Reports.
+    # TODO: more details
+    def get_model_architecture(self, ensemble_id: int) -> Dict:
         """
-        ???
+        Get ensemble's architecture.
 
         Args:
             ensemble_id (int): Ensemble ID.
 
         Returns:
-            ???
+            Dict: Architecture.
         """
-        api = '{ensemble_id}/threshold_endpoints'
-        return self.post(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token})
+        api = '{ensemble_id}/architecture'
+        rep = self.get(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token})
+        return rep
+
+    # TODO: more details
+    def get_model_presentation(self, ensemble_id: int) -> Dict:
+        """
+        Get ensemble's presentation.
+
+        Args:
+            ensemble_id (int): Ensemble ID.
+
+        Returns:
+            Dict: Ensemble's presentation.
+        """
+        api = '{ensemble_id}/presentation'
+        rep = self.get(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token})
+        return rep
 
     # TODO: more details
     def get_ensemble_summary_report(self, ensemble_id: int) -> List:
@@ -187,64 +181,55 @@ class EnsemblesMixin(abc.ABC):
         scatter_plot = self.get(api.format(ensemble_id=ensemble_id), params=params, query_prefix='ensembles')
         return scatter_plot
 
-    # TODO: more details
-    def get_model_architecture(self, ensemble_id: int) -> Dict:
+    def get_model_sensitivity_report(self, ensemble_id: int) -> Dict:
         """
-        Get ensemble's architecture.
+        Gets the sensitivity report for a specific ensemble.
+
+        Contains each feature sensitivity score for missing values and feature value.
 
         Args:
             ensemble_id (int): Ensemble ID.
 
         Returns:
-            Dict: Architecture.
+            Dict: Score for each feature in every sensitivity test.
         """
-        api = '{ensemble_id}/architecture'
-        rep = self.get(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token})
-        return rep
+        api = '{ensemble_id}/sensitivity'
+        result = self.get(api.format(ensemble_id=ensemble_id), params={'jwt': self.token}, query_prefix='ensembles')
+        self.__cleanup_report(result)
+        return result
 
-    # TODO: more details
-    def get_model_presentation(self, ensemble_id: int) -> Dict:
+    # TODO: what is this?
+    def get_threshold_endpoints_report(self, ensemble_id):
+        api = '{ensemble_id}/threshold_endpoints'
+        return self.get(api.format(ensemble_id=ensemble_id), params={'jwt': self.token}, query_prefix='ensembles')
+
+    # TODO: fill in
+    def calc_model_sensitivity(self, ensemble_id: int):
         """
-        Get ensemble's presentation.
+        ???
 
         Args:
             ensemble_id (int): Ensemble ID.
 
         Returns:
-            Dict: Ensemble's presentation.
+            ???
         """
-        api = '{ensemble_id}/presentation'
-        rep = self.get(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token})
-        return rep
+        api = '{ensemble_id}/sensitivity'
+        return self.post(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token})
 
-    def generate_export_download_link(self, ensemble_id: int) -> str:
+    # TODO: fill in
+    def calc_threshold_endpoints(self, ensemble_id):
         """
-        Get a link to download the ensemble.
+        ???
 
         Args:
             ensemble_id (int): Ensemble ID.
 
         Returns:
-            str: URL with which to download a TAR file containing the model.
+            ???
         """
-        api = "{ensemble_id}/download"
-        return self.post(api.format(ensemble_id=ensemble_id), params={'jwt': self.token}, query_prefix='ensembles')
-
-    # TODO: what is this?
-    def get_export_record(self, ensemble_id: int):
-        api = "{ensemble_id}"
-        return self.get(api.format(ensemble_id=ensemble_id), params={'jwt': self.token}, query_prefix='exports')
-
-    # TODO: what is this?
-    def create_export_record(self, ensemble_id):
-        api = ""
-        data = {'ensemble_id': ensemble_id}
-        return self.post(api, params={'jwt': self.token}, query_prefix='exports', data=data)
-
-    # TODO: what is this?
-    def rerun_export(self, ensemble_id):
-        api = "{ensemble_id}/rerun"
-        return self.post(api.format(ensemble_id=ensemble_id), params={'jwt': self.token}, query_prefix='exports')
+        api = '{ensemble_id}/threshold_endpoints'
+        return self.post(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token})
 
     def __cleanup_report(self, result):
         if result:
