@@ -244,7 +244,7 @@ class TasksMixin(abc.ABC):
         api = '{ensemble_id}/cancel'
         return self.post(api.format(ensemble_id=ensemble_id), query_prefix='ensembles', params={'jwt': self.token})
 
-    def get_task_result(self, task_id: int) -> Dict:
+    def get_task_summar(self, task_id: int) -> Dict:
         """
         Get full train task results.
 
@@ -254,7 +254,7 @@ class TasksMixin(abc.ABC):
             task_id (int): Task ID to return results of.
 
         Returns:
-            Dictionary of train task's results.
+            Dictionary of train task's execution summary.
         """
         api = '{task_id}/results'
         return self.get(api.format(task_id=task_id), params={'jwt': self.token}, query_prefix='tasks')
@@ -336,17 +336,6 @@ class TasksMixin(abc.ABC):
             "submitted" if operation was successful, raises FireflyClientError otherwise.
         """
         return self.__do_operation(op='resume', task_id=task_id)
-
-    # TODO: API doesn't exists - remove?
-    def get_user_storage(self):
-        api = 'storage'
-        return self.get(query=api, params={'jwt': self.token}, query_prefix='tasks')
-
-    # TODO: not needed due to enums - remove?
-    def get_configuration(self, presets, dataset_id=None, task_id=None):
-        params = {**presets, 'task_id': task_id, 'dataset_id': dataset_id, 'jwt': self.token}
-        api = 'configuration'
-        return self.get(query=api, params=params, query_prefix='tasks')
 
     def get_available_configuration_options(self, dataset_id: int, presets: Dict = {}) -> Dict:
         """

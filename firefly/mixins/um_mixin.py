@@ -30,8 +30,3 @@ class UMMixin(abc.ABC):
         """
         api = 'authenticate'
         return self.get(api, params={'jwt': jwt}, query_prefix='users')
-
-    # admin method? probably shouldn't be here right now
-    def list_accounts(self):
-        api = 'accounts'
-        return self.get(api, params={'jwt': self.token}, query_prefix='')
