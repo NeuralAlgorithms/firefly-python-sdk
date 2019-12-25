@@ -16,7 +16,6 @@ class APIRequestor(object):
         else:
             self._http_client = http_client
 
-
     def parse_filter_parameters(self, filter):
         if filter:
             filters = []
@@ -40,18 +39,9 @@ class APIRequestor(object):
             token = api_key
 
         params = {'jwt': token, **(params or {})}
-
         abs_url = "{base_url}/{url}".format(base_url=firefly.api_base, url=url)
-
         response = self._http_client.request(method=method, url=abs_url, headers=headers, json=body, params=params)
-
         return self._handle_response(response)
-
-        # if method in ["GET", "DELETE"]:
-        #     response = self._http_client.request(method=method, url=abs_url, headers=headers, params=params)
-        # elif method in ["POST", "UPDATE"]:
-        #     response = self._http_client.request(method=method, url=abs_url, headers=headers, json=body, params=params)
-        #     return FireflyResponse(data=data.json())
 
     def post(self, url, headers=None, body=None, params=None, api_key=None):
         return self.request("POST", url, headers, body, params, api_key)
@@ -77,7 +67,12 @@ class APIRequestor(object):
                 raise self._unhandled(response)
         else:
             if response_json:
-                return FireflyResponse(data=response_json.get('result', response_json))
+                if 'result' in response_json and isinstance(response_json['result'], dict):
+                    return FireflyResponse(data=response_json.get('result', response_json))
+                elif 'result' in response_json and isinstance(response_json['result'], int):
+                    return FireflyResponse(data={'id': response_json['result']})
+                else:
+                    return FireflyResponse(data={'result': response_json})
             else:
                 return FireflyResponse()
             # return response.json().get('result', response.json())
