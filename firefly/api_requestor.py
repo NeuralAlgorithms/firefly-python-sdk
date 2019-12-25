@@ -59,7 +59,6 @@ class APIRequestor(object):
         except ValueError:
             pass
         if response.status_code != 200:
-            # logger.exception('Failed query:{} with error {}'.format(full_query, response.status_code))
             if response.status_code == 400 and response_json:
                 # handled error. contains some description of the underlying error (but no traceback!)
                 raise self._handled(response)
@@ -69,13 +68,14 @@ class APIRequestor(object):
             if response_json:
                 if 'result' in response_json and isinstance(response_json['result'], dict):
                     return FireflyResponse(data=response_json.get('result', response_json))
+                elif 'result' in response_json and isinstance(response_json['result'], bool):
+                    return FireflyResponse(data=response_json)
                 elif 'result' in response_json and isinstance(response_json['result'], int):
                     return FireflyResponse(data={'id': response_json['result']})
                 else:
                     return FireflyResponse(data={'result': response_json})
             else:
                 return FireflyResponse()
-            # return response.json().get('result', response.json())
 
     def _handled(self, response):
         raise FireflyError(response.json()['error'])
