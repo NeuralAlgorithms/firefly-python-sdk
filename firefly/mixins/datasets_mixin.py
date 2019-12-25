@@ -362,20 +362,7 @@ class DatasetsMixin(abc.ABC):
             self.__wait_for_finite_state(data_id=id, getter=self.get_dataset)
         return id
 
-    # TODO: what is this?
-    def copy_data_preparation(self, prepared_id, raw_id, job='refit', callback_payload=None, predict_params=None):
-        api = '{prepared_id}/{raw_id}/{job}'
-        data = {'callback_payload': callback_payload, 'predict_params': predict_params}
-        return self.post(query=api.format(prepared_id=prepared_id, raw_id=raw_id, job=job),
-                         data=data, params={'jwt': self.token}, query_prefix='datasets')
-
-    # TODO: under '/dev/' prefix, should be here?
-    def reprepare(self, dataset_id):
-        api = 'dev/datasets/{dataset_id}/prepare'
-        return self.post(query=api.format(dataset_id=dataset_id),
-                         params={'jwt': self.token}, query_prefix='')
-
-    # TODO: return access key and secret for AWS, should be here?s
+    # TODO: return access key and secret for AWS, should be here?
     def get_upload_details(self):
         api = 'upload/details'
         return self.post(query=api, params={'jwt': self.token}, query_prefix='datasources')
