@@ -64,7 +64,7 @@ class _BaseClient:
             response = self.http_client.get(full_query, params=params, timeout=self.timeout, headers=headers)
         except requests.RequestException as e:
             logger.exception('Failed query:{} with requestException {}'.format(full_query, e))
-            raise FireflyClientError('Unable to reach Neural endpoint. Please check your connection.')
+            raise FireflyClientError('Unable to reach FireFly endpoint. Please check your connection.')
         return self._handle_response(response, full_query)
 
     def post(self, query, data=None, params=None, query_prefix=None):
@@ -75,7 +75,7 @@ class _BaseClient:
                                              headers=headers)
         except requests.RequestException as e:
             logger.exception('Failed query:{} with requestException {}'.format(full_query, e))
-            raise FireflyClientError('Unable to reach Neural endpoint. Please check your connection.')
+            raise FireflyClientError('Unable to reach FireFly endpoint. Please check your connection.')
         return self._handle_response(response, full_query)
 
     def build_headers(self):
@@ -87,7 +87,7 @@ class _BaseClient:
             response = self.http_client.put(full_query, json=data, params=params, timeout=self.timeout)
         except requests.RequestException as e:
             logger.exception('Failed query:{} with requestException {}'.format(full_query, e))
-            raise FireflyClientError('Unable to reach Neural endpoint. Please check your connection.')
+            raise FireflyClientError('Unable to reach FireFly endpoint. Please check your connection.')
         return self._handle_response(response, full_query)
 
     def delete(self, query, data=None, params=None, query_prefix=None):
@@ -96,7 +96,7 @@ class _BaseClient:
             response = self.http_client.delete(full_query, json=data, params=params, timeout=self.timeout)
         except requests.RequestException as e:
             logger.exception('Failed query:{} with requestException {}'.format(full_query, e))
-            raise FireflyClientError('Unable to reach a Neural endpoint. Please check your connection.')
+            raise FireflyClientError('Unable to reach a FireFly endpoint. Please check your connection.')
         return self._handle_response(response, full_query)
 
     def _handle_response(self, response, full_query):
