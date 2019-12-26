@@ -1,3 +1,4 @@
+import os
 from collections import OrderedDict
 
 import requests
@@ -52,6 +53,9 @@ class APIRequestor(object):
     def delete(self, url, headers=None, body=None, params=None, api_key=None):
         return self.request("DELETE", url, headers, body, params, api_key)
 
+    def put(self, url, headers=None, body=None, params=None, api_key=None):
+        return self.request("PUT", url, headers, body, params, api_key)
+
     def _handle_response(self, response):
         response_json = {}
         try:
@@ -72,6 +76,8 @@ class APIRequestor(object):
                     return FireflyResponse(data=response_json)
                 elif 'result' in response_json and isinstance(response_json['result'], int):
                     return FireflyResponse(data={'id': response_json['result']})
+                elif 'result' in response_json and isinstance(response_json['result'], list):
+                    return FireflyResponse(data=response_json)
                 else:
                     return FireflyResponse(data={'result': response_json})
             else:
@@ -90,6 +96,12 @@ class APIRequestor(object):
             raise APIError('API problem exception during request.')
 
     def _get_token(self):
+        if firefly.token is None:
+            firefly.token = os.getenv("FIREFLY_TOKEN", None)
+            if firefly.token is None:
+                raise FireflyError("No token found. Please use `firefly.authenticate()` to create a token,"
+                                   "or use `FIREFLY_TOKEN` environment variable to manually use on."
+                                   "If problem persists, please contact support.")
         return firefly.token
 
     def _parse_filter_parameters(self, filter):

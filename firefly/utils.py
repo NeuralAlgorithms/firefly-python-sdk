@@ -4,7 +4,7 @@ from typing import Dict
 
 import boto3
 
-FINITE_STATES = ['AVAILABLE', 'CREATED', 'CANCELED', 'FAILED']
+FINITE_STATES = ['AVAILABLE', 'CREATED', 'CANCELED', 'FAILED', 'COMPLETED']
 
 
 def s3_upload(dataset, filename: str, aws_credentials: Dict):

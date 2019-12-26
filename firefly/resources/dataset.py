@@ -1,8 +1,10 @@
 from typing import Dict, List
 
+import firefly
 from firefly import utils
 from firefly.api_requestor import APIRequestor
-from firefly.enums import ProblemType, FeatureType
+from firefly.enums import ProblemType, FeatureType, Estimator, TargetMetric, SplittingStrategy, Pipeline, \
+    InterpretabilityLevel, ValidationStrategy, CVStrategy
 from firefly.errors import APIError
 from firefly.firefly_response import FireflyResponse
 from firefly.resources.api_resource import APIResource
@@ -156,3 +158,93 @@ class Dataset(APIResource):
             response = cls.get(id, api_key=api_key)
 
         return response
+
+    @classmethod
+    def train(cls, task_name: str, estimators: List[Estimator], target_metric: TargetMetric, dataset_id: int,
+              splitting_strategy: SplittingStrategy, notes: str = None, ensemble_size: int = None,
+              max_models_num: int = None, single_model_timeout: int = None, pipeline: List[Pipeline] = None,
+              prediction_latency: int = None, interpretability_level: InterpretabilityLevel = None,
+              timeout: int = None, cost_matrix_weights: List[List[str]] = None, train_size: float = None,
+              test_size: float = None, validation_size: float = None, fold_size: int = None, n_folds: int = None,
+              horizon: int = None, validation_strategy: ValidationStrategy = None, cv_strategy: CVStrategy = None,
+              forecast_horizon: int = None, model_life_time: int = None, refit_on_all: bool = None, wait: bool = False,
+              skip_if_exists: bool = False, api_key: str = None) -> FireflyResponse:
+        """
+        Create and run a training task.
+
+        A task is responsible for searching for hyper-parameters that would maximize the model scores.
+        The task constructs ensembles made of selected models. Seeking ways to combine different models allows us
+        a smarter decision making.
+        Similar to calling `firefly.Task.create(...)`.
+
+        Args:
+            name (str): Task's name.
+            estimators (List[Estimator]): Estimators to use in the train task.
+            target_metric (TargetMetric): The target metric is the metric the model hyperparameter search process
+                attempts to optimize.
+            dataset_id (int): Dataset ID of the training data.
+            splitting_strategy (SplittingStrategy): Splitting strategy of the data.
+            notes (Optional[str]): Notes of the task.
+            ensemble_size (Optional[int]): Maximum number for models in ensemble.
+            max_models_num (Optional[int]): Maximum number of models to train.
+            single_model_timeout (Optional[int]): Maximum time for training one model.
+            pipeline (Optional[List[Pipeline]): Possible pipeline steps.
+            prediction_latency (Optional[int]): Maximum number of seconds ensemble prediction should take.
+            interpretability_level (Optional[InterpretabilityLevel]): Determines how interpertable your ensemble is. Higher level
+                of interpretability leads to more interpretable ensembles
+            timeout (Optional[int]): timeout for the search process.
+            cost_matrix_weights (Optional[List[List[str]]]): For classification and anomaly detection problems, the weights allow
+                determining a custom cost metric, which assigns different weights to the entries of the confusion matrix.
+            train_size (Optional[int]): The ratio of data taken for the train set of the model.
+            test_size (Optional[int]): The ratio of data taken for the test set of the model.
+            validation_size (Optional[int]): The ratio of data taken for the validation set of the model.
+            fold_size (Optional[int]): Fold size where performing cross-validation splitting.s
+            n_folds (Optional[int]): Number of folds when performing cross-validation splitting.\
+            validation_strategy (Optional[ValidationStrategy]): Validation strategy used for the train task.
+            cv_strategy (Optional[CVStrategy]): Cross-validation strategy to use for the train task.
+            horizon (Optional[int]): Something related to time-series models.
+            forecast_horizon (Optional[int]): Something related to time-series models.
+            model_life_time (Optional[int]): Something related to time-series models.
+            refit_on_all (Optional[bool]): Determines if the final ensemble will be refit on all data after
+                search process is done.
+            wait (Optional[bool]): Should call be synchronous or not.
+            skip_if_exists (Optional[bool]): Check if train task with same name exists and skip if it does.
+            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+
+        Returns:
+            FireflyResponse: Task ID if successful or task data if wait=True, raises FireflyError otherwise.
+        """
+        return firefly.Task.create(task_name, estimators, target_metric, dataset_id, splitting_strategy, notes,
+                                   ensemble_size, max_models_num, single_model_timeout, pipeline, prediction_latency,
+                                   interpretability_level, timeout, cost_matrix_weights, train_size, test_size,
+                                   validation_size, fold_size, n_folds, validation_strategy, cv_strategy, horizon,
+                                   forecast_horizon, model_life_time, refit_on_all, wait, skip_if_exists, api_key)
+
+    @classmethod
+    def get_available_configuration_options(cls, id: int, presets=None, api_key: str = None) -> FireflyResponse:
+        """
+        Get possible configurations for a specific dataset.
+
+        Return lists of possible values for estimators, pipelines, target metrics and splitting strategies for the
+        specified dataset.
+
+        Args:
+            dataset_id (int): Dataset ID to get possible configuration.
+            presets (Optional[dict]): Dictionary with presets for the configuration.
+            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+
+        Returns:
+            Dictionary containing lists of possible values for parameters.
+        """
+        if presets is None:
+            presets = {}
+        requestor = APIRequestor()
+        url = "tasks/configuration/options"
+        response = requestor.get(url=url, params={'dataset_id': id, **presets}, api_key=api_key)
+        new_data = {
+            'estimators': [Estimator(e) for e in response['estimators']],
+            'target_metric': [TargetMetric(e) for e in response['target_metric']],
+            'splitting_strategy': [SplittingStrategy(e) for e in response['splitting_strategy']],
+            'pipeline': [Pipeline(e) for e in response['pipeline']],
+        }
+        return FireflyResponse(data=new_data)

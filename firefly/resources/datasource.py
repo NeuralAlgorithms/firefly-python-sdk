@@ -224,7 +224,7 @@ class Datasource(APIResource):
         """
         Creates and prepares a dataset.
 
-        When creating a dataset the feature roles are labled and the feature types can be set by the user.
+        When creating a dataset the feature roles are labeled and the feature types can be set by the user.
         Data analysis is done in order to optimize the model training and search process.
 
         Args:
