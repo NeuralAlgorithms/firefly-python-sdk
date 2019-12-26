@@ -1,6 +1,8 @@
 class FireflyResponse(object):
-    def __init__(self, data: dict = {}):
-        self._data = data
+    def __init__(self, data: dict = None, headers: dict = None, status_code: str = None):
+        self.headers = headers or {}
+        self._data = data or {}
+        self.status_code = status_code
 
     def __getitem__(self, key):
         return self._data.get(key, None)
@@ -16,3 +18,10 @@ class FireflyResponse(object):
 
     def to_dict(self):
         return self._data
+
+    @property
+    def request_id(self):
+        try:
+            return self.headers["X-Request-ID"]
+        except Exception:
+            return None

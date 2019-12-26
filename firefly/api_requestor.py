@@ -2,6 +2,7 @@ import os
 from collections import OrderedDict
 
 import requests
+import uuid
 
 import firefly
 from firefly.errors import FireflyError, AuthenticationError, APIError
@@ -39,9 +40,12 @@ class APIRequestor(object):
         else:
             token = api_key
 
+        rheaders = self._build_headers()
+        rheaders.update(**(headers or {}))
+
         params = {'jwt': token, **(params or {})}
         abs_url = "{base_url}/{url}".format(base_url=firefly.api_base, url=url)
-        response = self._http_client.request(method=method, url=abs_url, headers=headers, json=body, params=params)
+        response = self._http_client.request(method=method, url=abs_url, headers=rheaders, json=body, params=params)
         return self._handle_response(response)
 
     def post(self, url, headers=None, body=None, params=None, api_key=None):
@@ -55,6 +59,9 @@ class APIRequestor(object):
 
     def put(self, url, headers=None, body=None, params=None, api_key=None):
         return self.request("PUT", url, headers, body, params, api_key)
+
+    def _build_headers(self):
+        return {'X-Request-ID': str(uuid.uuid4())}
 
     def _handle_response(self, response):
         response_json = {}
@@ -71,17 +78,17 @@ class APIRequestor(object):
         else:
             if response_json:
                 if 'result' in response_json and isinstance(response_json['result'], dict):
-                    return FireflyResponse(data=response_json.get('result', response_json))
+                    return FireflyResponse(data=response_json.get('result', response_json), headers=response.headers, status_code=response.status_code)
                 elif 'result' in response_json and isinstance(response_json['result'], bool):
-                    return FireflyResponse(data=response_json)
+                    return FireflyResponse(data=response_json, headers=response.headers, status_code=response.status_code)
                 elif 'result' in response_json and isinstance(response_json['result'], int):
-                    return FireflyResponse(data={'id': response_json['result']})
+                    return FireflyResponse(data={'id': response_json['result']}, headers=response.headers, status_code=response.status_code)
                 elif 'result' in response_json and isinstance(response_json['result'], list):
-                    return FireflyResponse(data=response_json)
+                    return FireflyResponse(data=response_json, headers=response.headers, status_code=response.status_code)
                 else:
-                    return FireflyResponse(data={'result': response_json})
+                    return FireflyResponse(data={'result': response_json}, headers=response.headers, status_code=response.status_code)
             else:
-                return FireflyResponse()
+                return FireflyResponse(headers=response.headers, status_code=response.status_code)
 
     def _handled(self, response):
         raise FireflyError(response.json()['error'])
