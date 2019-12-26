@@ -1,3 +1,14 @@
+"""
+Working with Firefly.ai's API, datasources represent the raw CSV files that can be used either for model training
+purposes or for running batch predictions once they have been analyzed.
+
+In order to create a datasource, users need to upload a CSV file to S3. To upload files to S3 users need to use the
+‘Generate upload credentials’ API to access the correct upload credentials.
+
+‘Datasources’ APIs include the creation of a datasource from an uploaded CSV file, querying existing datasources
+(Get, List, Preview and Delete), and get datasource metadata such as Get feature types and Get type insights.
+"""
+
 import io
 import os
 from typing import Dict, List
@@ -12,7 +23,7 @@ from firefly.resources.api_resource import APIResource
 
 
 class Datasource(APIResource):
-    CLASS_PREFIX = 'datasources'
+    _CLASS_PREFIX = 'datasources'
 
     @classmethod
     def list(cls, search_term: str = None, page: int = None, page_size: int = None, sort: Dict = None,
@@ -154,7 +165,7 @@ class Datasource(APIResource):
             "analyze": True,
             "na_values": None}
         requestor = APIRequestor()
-        response = requestor.post(url=cls.CLASS_PREFIX, body=data, api_key=api_key)
+        response = requestor.post(url=cls._CLASS_PREFIX, body=data, api_key=api_key)
 
         if wait:
             id = response['id']
@@ -176,7 +187,7 @@ class Datasource(APIResource):
             FireflyResponse: Containing a mapping of feature name to a base type.
         """
         requestor = APIRequestor()
-        url = '{prefix}/{id}/data_types/base'.format(prefix=cls.CLASS_PREFIX, id=id)
+        url = '{prefix}/{id}/data_types/base'.format(prefix=cls._CLASS_PREFIX, id=id)
         response = requestor.get(url, api_key=api_key)
         return response
 
@@ -193,7 +204,7 @@ class Datasource(APIResource):
             FireflyResponse: Containing a mapping of feature name to a feature type.
         """
         requestor = APIRequestor()
-        url = '{prefix}/{id}/data_types/feature'.format(prefix=cls.CLASS_PREFIX, id=id)
+        url = '{prefix}/{id}/data_types/feature'.format(prefix=cls._CLASS_PREFIX, id=id)
         response = requestor.get(url, api_key=api_key)
         return response
 
@@ -210,7 +221,7 @@ class Datasource(APIResource):
             FireflyResponse: Containing a mapping of feature name to a list of warning (can be empty).
         """
         requestor = APIRequestor()
-        url = '{prefix}/{id}/data_types/warning'.format(prefix=cls.CLASS_PREFIX, id=id)
+        url = '{prefix}/{id}/data_types/warning'.format(prefix=cls._CLASS_PREFIX, id=id)
         response = requestor.get(url, api_key=api_key)
         return response
 
@@ -259,6 +270,6 @@ class Datasource(APIResource):
     @classmethod
     def __get_upload_details(cls, api_key: str = None):
         requestor = APIRequestor()
-        url = "{prefix}/upload/details".format(prefix=cls.CLASS_PREFIX)
+        url = "{prefix}/upload/details".format(prefix=cls._CLASS_PREFIX)
         response = requestor.post(url=url, api_key=api_key)
         return response

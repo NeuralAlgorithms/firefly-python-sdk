@@ -1,3 +1,11 @@
+"""
+In the context of Firefly.ai's API, 'predictions' is the way to productize the machine learning ensemble created in the
+previous steps. Once an ensemble is created, users can upload an additional datasource that will be used for performing
+the predictions.
+
+‘Predictions’ APIs includes Create prediction to get predictions for existing ensembles and the uploaded datasource,
+as well as querying of predictions (Get, List and Delete).
+"""
 from typing import Dict
 
 from firefly.api_requestor import APIRequestor
@@ -6,7 +14,7 @@ from firefly.resources.api_resource import APIResource
 
 
 class Prediction(APIResource):
-    CLASS_PREFIX = 'predictions'
+    _CLASS_PREFIX = 'predictions'
 
     @classmethod
     def list(cls, search_term: str = None, page: int = None, page_size: int = None, sort: Dict = None,
@@ -84,5 +92,5 @@ class Prediction(APIResource):
         }
 
         requestor = APIRequestor()
-        response = requestor.post(url=cls.CLASS_PREFIX, body=data, api_key=api_key)
+        response = requestor.post(url=cls._CLASS_PREFIX, body=data, api_key=api_key)
         return response

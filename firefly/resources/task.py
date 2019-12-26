@@ -1,3 +1,17 @@
+"""
+The task entity represents the model training process when working with Firefly.ai's API. When users train a model,
+a task is created for that process using a previously created dataset as the input for the model.
+
+When creating a task, you should set the training configuration (e.g. target metric, ensemble size,
+data splitting: Holdout/CV, etc.), which will determine the way the model will be trained.
+
+One of the outputs of a model training task is an ensemble, a combination of one or more machine learning models
+optimized for the dataset and model training configuration (target metric, selected algorithms etc.).
+In addition, it is possible to use ensembles to perform predictions, as well as for other purposes.
+
+‘Tasks’ APIs include the creation of task for model training using a previously created dataset, querying existing tasks
+(Get, Gist, Gelete and Get configuration) as well as Get available configuration options to work with your dataset.
+"""
 from typing import Dict, List
 
 from firefly import utils
@@ -10,7 +24,7 @@ from firefly.resources.api_resource import APIResource
 
 
 class Task(APIResource):
-    CLASS_PREFIX = 'tasks'
+    _CLASS_PREFIX = 'tasks'
 
     @classmethod
     def list(cls, search_term: str = None, page: int = None, page_size: int = None, sort: Dict = None,
@@ -173,7 +187,7 @@ class Task(APIResource):
         }
 
         requestor = APIRequestor()
-        response = requestor.post(url=cls.CLASS_PREFIX, body=task_config, api_key=api_key)
+        response = requestor.post(url=cls._CLASS_PREFIX, body=task_config, api_key=api_key)
         id = response['task_id']
         if wait:
             utils.wait_for_finite_state(cls.get, id, api_key=api_key)
@@ -197,7 +211,7 @@ class Task(APIResource):
             FireflyResponse: `task_id` value if successfull, raises FireflyError otherwise.
         """
         requestor = APIRequestor()
-        url = "{prefix}/{task_id}/notes".format(prefix=cls.CLASS_PREFIX, task_id=id)
+        url = "{prefix}/{task_id}/notes".format(prefix=cls._CLASS_PREFIX, task_id=id)
         response = requestor.put(url=url, body={'notes': notes}, api_key=api_key)
         return response
 
@@ -216,7 +230,7 @@ class Task(APIResource):
             FireflyResponse:  List of all task's ensembles' scores.
         """
         requestor = APIRequestor()
-        url = "{prefix}/{task_id}/progress".format(prefix=cls.CLASS_PREFIX, task_id=id)
+        url = "{prefix}/{task_id}/progress".format(prefix=cls._CLASS_PREFIX, task_id=id)
         response = requestor.get(url=url, api_key=api_key)
         return response
 
@@ -235,7 +249,7 @@ class Task(APIResource):
             Dictionary of train task's results.
         """
         requestor = APIRequestor()
-        url = "{prefix}/{task_id}/results".format(prefix=cls.CLASS_PREFIX, task_id=id)
+        url = "{prefix}/{task_id}/results".format(prefix=cls._CLASS_PREFIX, task_id=id)
         response = requestor.get(url=url, api_key=api_key)
         return response
 
@@ -300,6 +314,6 @@ class Task(APIResource):
         if op not in ('resume', 'rerun', 'pause', 'cancel'):
             raise APIError("Operation {} is not supported".format(op))
         requestor = APIRequestor()
-        url = '{prefix}/{task_id}/{op}'.format(prefix=cls.CLASS_PREFIX, task_id=task_id, op=op)
+        url = '{prefix}/{task_id}/{op}'.format(prefix=cls._CLASS_PREFIX, task_id=task_id, op=op)
         response = requestor.post(url=url, api_key=api_key)
         return response

@@ -1,3 +1,12 @@
+"""
+The dataset entity represents a feature labeling transformation made to a datasource before initiating training models.
+In other words, dataset is a translated version of raw data that is presented in a format that Firefly.ai can read.
+A dataset is the same data from the raw CSV file presented as a list of numerical, categorical and date/time features
+alongside with respected feature roles (target, block-id etc).
+
+‘Datasets’ APIs include the Create dataset from a previously created datasource, and querying existing datasets (Get,
+List, Preview and Delete).
+"""
 from typing import Dict, List
 
 import firefly
@@ -11,7 +20,7 @@ from firefly.resources.api_resource import APIResource
 
 
 class Dataset(APIResource):
-    CLASS_PREFIX = 'datasets'
+    _CLASS_PREFIX = 'datasets'
 
     @classmethod
     def list(cls, search_term: str = None, page: int = None, page_size: int = None, sort: Dict = None,
@@ -150,7 +159,7 @@ class Dataset(APIResource):
         }
 
         requestor = APIRequestor()
-        response = requestor.post(url=cls.CLASS_PREFIX, body=data, api_key=api_key)
+        response = requestor.post(url=cls._CLASS_PREFIX, body=data, api_key=api_key)
 
         if wait:
             id = response['id']

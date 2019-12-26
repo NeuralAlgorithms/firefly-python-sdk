@@ -1,3 +1,14 @@
+"""
+An ensemble is the main entity that represents the result of a machine learning training process (done using the
+‘task’ entity). An ensemble is a combination of one or more machine learning models optimized for the dataset and model
+training configuration (target metric, selected algorithms etc.).
+
+To be able to work with ensembles, users can invoke the Get List ensembles API, which is a part of the ‘tasks’ entity.
+
+‘Ensembles’ APIs include querying existing ensembles (Get and List), but also the Refit ensemble which allows users to
+keep their machine learning models updated. In the future explainability features such as ROC curve, Confusion matrix
+and other tools will be available as well.
+"""
 from typing import Dict
 
 from firefly.api_requestor import APIRequestor
@@ -6,7 +17,7 @@ from firefly.resources.api_resource import APIResource
 
 
 class Ensemble(APIResource):
-    CLASS_PREFIX = 'ensembles'
+    _CLASS_PREFIX = 'ensembles'
 
     @classmethod
     def list(cls, search_term: str = None, page: int = None, page_size: int = None, sort: Dict = None,
@@ -71,7 +82,7 @@ class Ensemble(APIResource):
             FireflyResponse: "submitted" if operation was successful, raises FireflyClientError otherwise.
         """
         requestor = APIRequestor()
-        url = "{prefix}/{id}/notes".format(prefix=cls.CLASS_PREFIX, id=id)
+        url = "{prefix}/{id}/notes".format(prefix=cls._CLASS_PREFIX, id=id)
         response = requestor.put(url=url, body={'notes': notes}, api_key=api_key)
         return response
 
@@ -90,7 +101,7 @@ class Ensemble(APIResource):
             FireflyResponse: Score for each feature in every sensitivity test.
         """
         requestor = APIRequestor()
-        url = "{prefix}/{id}/sensitivity".format(prefix=cls.CLASS_PREFIX, id=id)
+        url = "{prefix}/{id}/sensitivity".format(prefix=cls._CLASS_PREFIX, id=id)
         response = requestor.get(url=url, api_key=api_key)
         result = response.to_dict()
         cls.__cleanup_report(result)
@@ -109,7 +120,7 @@ class Ensemble(APIResource):
             FireflyResponse: Prediction samples.
         """
         requestor = APIRequestor()
-        url = "{prefix}/{id}/test_prediction_sample".format(prefix=cls.CLASS_PREFIX, id=id)
+        url = "{prefix}/{id}/test_prediction_sample".format(prefix=cls._CLASS_PREFIX, id=id)
         response = requestor.get(url=url, api_key=api_key)
         return response
 
@@ -126,7 +137,7 @@ class Ensemble(APIResource):
             FireflyResponse: Summary report.
         """
         requestor = APIRequestor()
-        url = "{prefix}/{id}/summary".format(prefix=cls.CLASS_PREFIX, id=id)
+        url = "{prefix}/{id}/summary".format(prefix=cls._CLASS_PREFIX, id=id)
         response = requestor.get(url=url, api_key=api_key)
         return response
 
@@ -143,7 +154,7 @@ class Ensemble(APIResource):
             FireflyResponse: ROC curve data.
         """
         requestor = APIRequestor()
-        url = "{prefix}/{id}/roc_curve".format(prefix=cls.CLASS_PREFIX, id=id)
+        url = "{prefix}/{id}/roc_curve".format(prefix=cls._CLASS_PREFIX, id=id)
         response = requestor.get(url=url, api_key=api_key)
         return response
 
@@ -160,7 +171,7 @@ class Ensemble(APIResource):
             FireflyResponse: Confusion matrix.
         """
         requestor = APIRequestor()
-        url = "{prefix}/{id}/confusion".format(prefix=cls.CLASS_PREFIX, id=id)
+        url = "{prefix}/{id}/confusion".format(prefix=cls._CLASS_PREFIX, id=id)
         response = requestor.get(url=url, api_key=api_key)
         return response
 
@@ -177,7 +188,7 @@ class Ensemble(APIResource):
             FireflyResponse: Architecture.
         """
         requestor = APIRequestor()
-        url = "{prefix}/{id}/architecture".format(prefix=cls.CLASS_PREFIX, id=id)
+        url = "{prefix}/{id}/architecture".format(prefix=cls._CLASS_PREFIX, id=id)
         response = requestor.get(url=url, api_key=api_key)
         return response
 
@@ -194,7 +205,7 @@ class Ensemble(APIResource):
             FireflyResponse: Ensemble's presentation.
         """
         requestor = APIRequestor()
-        url = "{prefix}/{id}/presentation".format(prefix=cls.CLASS_PREFIX, id=id)
+        url = "{prefix}/{id}/presentation".format(prefix=cls._CLASS_PREFIX, id=id)
         response = requestor.get(url=url, api_key=api_key)
         return response
 
@@ -211,7 +222,7 @@ class Ensemble(APIResource):
             FireflyResponse: URL with which to download a TAR file containing the model.
         """
         requestor = APIRequestor()
-        url = "{prefix}/{id}/download".format(prefix=cls.CLASS_PREFIX, id=id)
+        url = "{prefix}/{id}/download".format(prefix=cls._CLASS_PREFIX, id=id)
         response = requestor.post(url=url, api_key=api_key)
         return response
 
