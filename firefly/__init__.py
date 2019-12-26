@@ -9,7 +9,6 @@ token = None
 api_base = 'https://api.firefly.ai'
 ENDPOINT = 'api.firefly.ai'
 
-from firefly.client import Client
 from firefly import enums
 
 from firefly.auth import authenticate
