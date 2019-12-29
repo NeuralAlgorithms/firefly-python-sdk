@@ -75,23 +75,30 @@ class APIRequestor(object):
                 raise self._unhandled(response)
         else:
             if response_json:
-                if 'result' in response_json and isinstance(response_json['result'], dict):
-                    return FireflyResponse(data=response_json.get('result', response_json), headers=response.headers,
-                                           status_code=response.status_code)
-                elif 'result' in response_json and isinstance(response_json['result'], bool):
-                    return FireflyResponse(data=response_json, headers=response.headers,
-                                           status_code=response.status_code)
-                elif 'result' in response_json and isinstance(response_json['result'], int):
-                    return FireflyResponse(data={'id': response_json['result']}, headers=response.headers,
-                                           status_code=response.status_code)
-                elif 'result' in response_json and isinstance(response_json['result'], list):
-                    return FireflyResponse(data=response_json, headers=response.headers,
-                                           status_code=response.status_code)
-                else:
-                    return FireflyResponse(data={'result': response_json}, headers=response.headers,
-                                           status_code=response.status_code)
+                return self._handle_json(response)
             else:
                 return FireflyResponse(headers=response.headers, status_code=response.status_code)
+
+    def _handle_json(self, response):
+        response_json = response.json()
+        if 'result' not in response_json:
+            result = FireflyResponse(data={'result': response_json}, headers=response.headers,
+                                     status_code=response.status_code)
+        else:
+            response_type = type(response_json['result'])
+            if response_type == dict:
+                result = FireflyResponse(data=response_json.get('result', response_json), headers=response.headers,
+                                         status_code=response.status_code)
+            elif response_type == bool:
+                result = FireflyResponse(data=response_json, headers=response.headers,
+                                         status_code=response.status_code)
+            elif response_type == int:
+                result = FireflyResponse(data={'id': response_json['result']}, headers=response.headers,
+                                         status_code=response.status_code)
+            else:
+                result = FireflyResponse(data=response_json, headers=response.headers,
+                                         status_code=response.status_code)
+        return result
 
     def _handled(self, response):
         raise FireflyError(response.json()['error'])
