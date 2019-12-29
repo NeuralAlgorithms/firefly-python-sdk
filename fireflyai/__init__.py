@@ -7,11 +7,9 @@ logger.addHandler(NullHandler())
 
 token = None
 api_base = 'https://api.firefly.ai'
-ENDPOINT = 'api.firefly.ai'
 
-from firefly import enums
-
-from firefly.auth import authenticate
-from firefly.resources import *
+from fireflyai import enums
+from fireflyai.auth import authenticate
+from fireflyai.resources import *
 
 

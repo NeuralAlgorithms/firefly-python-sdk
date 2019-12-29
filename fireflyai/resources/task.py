@@ -14,13 +14,13 @@ In addition, it is possible to use ensembles to perform predictions, as well as 
 """
 from typing import Dict, List
 
-from firefly import utils
-from firefly.api_requestor import APIRequestor
-from firefly.enums import Estimator, Pipeline, InterpretabilityLevel, ValidationStrategy, SplittingStrategy, \
+from fireflyai import utils
+from fireflyai.api_requestor import APIRequestor
+from fireflyai.enums import Estimator, Pipeline, InterpretabilityLevel, ValidationStrategy, SplittingStrategy, \
     TargetMetric, CVStrategy
-from firefly.errors import APIError
-from firefly.firefly_response import FireflyResponse
-from firefly.resources.api_resource import APIResource
+from fireflyai.errors import APIError
+from fireflyai.firefly_response import FireflyResponse
+from fireflyai.resources.api_resource import APIResource
 
 
 class Task(APIResource):
@@ -38,7 +38,7 @@ class Task(APIResource):
             page_size (Optional[int]): For pagination, how many records will appear in a single page.
             sort (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to sort the results by.
             filter_ (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to filter the results by.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Tasks, which are represented as nested dictionaries under `hits`.
@@ -54,7 +54,7 @@ class Task(APIResource):
 
         Args:
             task_id (int): Task ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Task if exists, raises FireflyClientError otherwise.
@@ -67,11 +67,11 @@ class Task(APIResource):
         Get information on a specific task, identified by its name.
 
         Information includes the state of the task, and other basic attributes
-        Similar to calling `firefly.Task.list(filters_={'name': [NAME]})`.
+        Similar to calling `fireflyai.Task.list(filters_={'name': [NAME]})`.
 
         Args:
             name (str): Task name.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Information about the dataset.
@@ -90,7 +90,7 @@ class Task(APIResource):
 
         Args:
             id (int): Task ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: "true" if deleted successfuly, raises FireflyClientError otherwise.
@@ -146,7 +146,7 @@ class Task(APIResource):
                 search process is done.
             wait (Optional[bool]): Should call be synchronous or not.
             skip_if_exists (Optional[bool]): Check if train task with same name exists and skip if it does.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Task ID if successful or task data if wait=True, raises FireflyError otherwise.
@@ -161,13 +161,13 @@ class Task(APIResource):
         task_config = {
             'dataset_id': dataset_id,
             'name': name,
-            'estimators': [e.value for e in estimators],
+            'estimators': [e.value for e in estimators] if estimators is not None else None,
             'target_metric': target_metric.value if target_metric is not None else None,
             'splitting_strategy': splitting_strategy.value if splitting_strategy is not None else None,
             'ensemble_size': ensemble_size,
             'max_models_num': max_models_num,
             'single_model_timeout': single_model_timeout,
-            'pipeline': [p.value for p in pipeline],
+            'pipeline': [p.value for p in pipeline] if pipeline is not None else None,
             'prediction_latency': prediction_latency,
             'interpretability_level': interpretability_level.value if interpretability_level is not None else None,
             'timeout': timeout,
@@ -205,7 +205,7 @@ class Task(APIResource):
         Args:
             id (int): Task ID.
             notes (str): New notes value.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: `task_id` value if successfull, raises FireflyError otherwise.
@@ -224,7 +224,7 @@ class Task(APIResource):
 
         Args:
             id (int): Task ID to get progress of.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse:  List of all task's ensembles' scores.
@@ -243,7 +243,7 @@ class Task(APIResource):
 
         Args:
             id (int): Task ID to return results of.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             Dictionary of train task's results.
@@ -260,7 +260,7 @@ class Task(APIResource):
 
         Args:
             task_id (int): Task ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: "submitted" if operation was successful, raises FireflyClientError otherwise.
@@ -274,7 +274,7 @@ class Task(APIResource):
 
         Args:
             task_id (int): Task ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: "submitted" if operation was successful, raises FireflyClientError otherwise.
@@ -288,7 +288,7 @@ class Task(APIResource):
 
         Args:
             task_id (int): Task ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: "submitted" if operation was successful, raises FireflyClientError otherwise.
@@ -302,7 +302,7 @@ class Task(APIResource):
 
         Args:
             task_id (int): Task ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: "submitted" if operation was successful, raises FireflyClientError otherwise.

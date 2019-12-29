@@ -9,14 +9,14 @@ List, Preview and Delete).
 """
 from typing import Dict, List
 
-import firefly
-from firefly import utils
-from firefly.api_requestor import APIRequestor
-from firefly.enums import ProblemType, FeatureType, Estimator, TargetMetric, SplittingStrategy, Pipeline, \
+import fireflyai
+from fireflyai import utils
+from fireflyai.api_requestor import APIRequestor
+from fireflyai.enums import ProblemType, FeatureType, Estimator, TargetMetric, SplittingStrategy, Pipeline, \
     InterpretabilityLevel, ValidationStrategy, CVStrategy
-from firefly.errors import APIError
-from firefly.firefly_response import FireflyResponse
-from firefly.resources.api_resource import APIResource
+from fireflyai.errors import APIError
+from fireflyai.firefly_response import FireflyResponse
+from fireflyai.resources.api_resource import APIResource
 
 
 class Dataset(APIResource):
@@ -34,7 +34,7 @@ class Dataset(APIResource):
             page_size (Optional[int]): For pagination, how many records will appear in a single page.
             sort (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to sort the results by.
             filter_ (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to filter the results by.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Datasets, which are represented as nested dictionaries under `hits`.
@@ -50,7 +50,7 @@ class Dataset(APIResource):
 
         Args:
             id (int): Dataset ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Information about the dataset.
@@ -63,11 +63,11 @@ class Dataset(APIResource):
         Get information on a specific dataset, identified by its name.
 
         Information includes the state of the dataset, and other basic attributes.
-        Similar to calling `firefly.Dataset.list(filters_={'name': [NAME]})`.
+        Similar to calling `fireflyai.Dataset.list(filters_={'name': [NAME]})`.
 
         Args:
             name (str): Dataset name.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Information about the dataset.
@@ -86,7 +86,7 @@ class Dataset(APIResource):
 
         Args:
             id (int): Dataset ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: "true" if deleted successfuly, raises FireflyClientError otherwise.
@@ -126,7 +126,7 @@ class Dataset(APIResource):
             hidden (Optional[List[str]]): ???
             wait (Optional[bool]): Should call be synchronous or not.
             skip_if_exists (Optional[bool]): Check if dataset with same name exists and skip if true.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Dataset ID if successful or dataset data if wait=True, raises FireflyError otherwise.
@@ -184,10 +184,10 @@ class Dataset(APIResource):
         A task is responsible for searching for hyper-parameters that would maximize the model scores.
         The task constructs ensembles made of selected models. Seeking ways to combine different models allows us
         a smarter decision making.
-        Similar to calling `firefly.Task.create(...)`.
+        Similar to calling `fireflyai.Task.create(...)`.
 
         Args:
-            name (str): Task's name.
+            task_name (str): Task's name.
             estimators (List[Estimator]): Estimators to use in the train task.
             target_metric (TargetMetric): The target metric is the metric the model hyperparameter search process
                 attempts to optimize.
@@ -218,16 +218,16 @@ class Dataset(APIResource):
                 search process is done.
             wait (Optional[bool]): Should call be synchronous or not.
             skip_if_exists (Optional[bool]): Check if train task with same name exists and skip if it does.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Task ID if successful or task data if wait=True, raises FireflyError otherwise.
         """
-        return firefly.Task.create(task_name, estimators, target_metric, dataset_id, splitting_strategy, notes,
-                                   ensemble_size, max_models_num, single_model_timeout, pipeline, prediction_latency,
-                                   interpretability_level, timeout, cost_matrix_weights, train_size, test_size,
-                                   validation_size, fold_size, n_folds, validation_strategy, cv_strategy, horizon,
-                                   forecast_horizon, model_life_time, refit_on_all, wait, skip_if_exists, api_key)
+        return fireflyai.Task.create(task_name, estimators, target_metric, dataset_id, splitting_strategy, notes,
+                                     ensemble_size, max_models_num, single_model_timeout, pipeline, prediction_latency,
+                                     interpretability_level, timeout, cost_matrix_weights, train_size, test_size,
+                                     validation_size, fold_size, n_folds, validation_strategy, cv_strategy, horizon,
+                                     forecast_horizon, model_life_time, refit_on_all, wait, skip_if_exists, api_key)
 
     @classmethod
     def get_available_configuration_options(cls, id: int, presets=None, api_key: str = None) -> FireflyResponse:
@@ -240,7 +240,7 @@ class Dataset(APIResource):
         Args:
             dataset_id (int): Dataset ID to get possible configuration.
             presets (Optional[dict]): Dictionary with presets for the configuration.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             Dictionary containing lists of possible values for parameters.

@@ -4,9 +4,9 @@ from collections import OrderedDict
 import requests
 import uuid
 
-import firefly
-from firefly.errors import FireflyError, AuthenticationError, APIError
-from firefly.firefly_response import FireflyResponse
+import fireflyai
+from fireflyai.errors import FireflyError, AuthenticationError, APIError
+from fireflyai.firefly_response import FireflyResponse
 
 
 class APIRequestor(object):
@@ -44,7 +44,7 @@ class APIRequestor(object):
         rheaders.update(**(headers or {}))
 
         params = {'jwt': token, **(params or {})}
-        abs_url = "{base_url}/{url}".format(base_url=firefly.api_base, url=url)
+        abs_url = "{base_url}/{url}".format(base_url=fireflyai.api_base, url=url)
         response = self._http_client.request(method=method, url=abs_url, headers=rheaders, json=body, params=params)
         return self._handle_response(response)
 
@@ -103,13 +103,13 @@ class APIRequestor(object):
             raise APIError('API problem exception during request.')
 
     def _get_token(self):
-        if firefly.token is None:
-            firefly.token = os.getenv("FIREFLY_TOKEN", None)
-            if firefly.token is None:
-                raise FireflyError("No token found. Please use `firefly.authenticate()` to create a token,"
+        if fireflyai.token is None:
+            fireflyai.token = os.getenv("FIREFLY_TOKEN", None)
+            if fireflyai.token is None:
+                raise FireflyError("No token found. Please use `fireflyai.authenticate()` to create a token,"
                                    "or use `FIREFLY_TOKEN` environment variable to manually use on."
                                    "If problem persists, please contact support.")
-        return firefly.token
+        return fireflyai.token
 
     def _parse_filter_parameters(self, filter):
         if filter:

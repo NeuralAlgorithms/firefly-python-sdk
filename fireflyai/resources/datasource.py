@@ -13,13 +13,13 @@ import io
 import os
 from typing import Dict, List
 
-import firefly
-from firefly import utils
-from firefly.api_requestor import APIRequestor
-from firefly.enums import FeatureType, ProblemType
-from firefly.errors import APIError
-from firefly.firefly_response import FireflyResponse
-from firefly.resources.api_resource import APIResource
+import fireflyai
+from fireflyai import utils
+from fireflyai.api_requestor import APIRequestor
+from fireflyai.enums import FeatureType, ProblemType
+from fireflyai.errors import APIError
+from fireflyai.firefly_response import FireflyResponse
+from fireflyai.resources.api_resource import APIResource
 
 
 class Datasource(APIResource):
@@ -37,7 +37,7 @@ class Datasource(APIResource):
             page_size (Optional[int]): For pagination, how many records will appear in a single page.
             sort (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to sort the results by.
             filter_ (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to filter the results by.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Datasources, which are represented as nested dictionaries under `hits`.
@@ -53,7 +53,7 @@ class Datasource(APIResource):
 
         Args:
             id (int): Datasource ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Information about the datasource.
@@ -66,11 +66,11 @@ class Datasource(APIResource):
         Get information on a specific datasource, identified by its name.
 
         Information includes the state of the datasource, and other basic attributes.
-        Similar to calling `firefly.Datasource.list(filters_={'name': [NAME]})`.
+        Similar to calling `fireflyai.Datasource.list(filters_={'name': [NAME]})`.
 
         Args:
             name (str): Datasource name.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Information about the datasource.
@@ -89,7 +89,7 @@ class Datasource(APIResource):
 
         Args:
             id (int): Datasource ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: "true" if deleted successfuly, raises FireflyClientError otherwise.
@@ -106,7 +106,7 @@ class Datasource(APIResource):
             filename (str): File to be uploaded.
             wait (Optional[bool]): Should call be synchronous or not.
             skip_if_exists (Optional[bool]): Check if datasource with same name exists and skip if true.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Datasource ID if successful or datasource data if wait=True, raises FireflyError otherwise.
@@ -136,7 +136,7 @@ class Datasource(APIResource):
             data_source_name (str): Name of the datasource.
             wait (Optional[bool]): Should call be synchronous or not.
             skip_if_exists (Optional[bool]): Check if datasource with same name exists and skip if true.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Datasource ID if successful, raises FireflyError otherwise.
@@ -181,7 +181,7 @@ class Datasource(APIResource):
 
         Args:
             id (int): Datasource ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Containing a mapping of feature name to a base type.
@@ -198,7 +198,7 @@ class Datasource(APIResource):
 
         Args:
             id (int): Datasource ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Containing a mapping of feature name to a feature type.
@@ -215,7 +215,7 @@ class Datasource(APIResource):
 
         Args:
             id (int): Datasource ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Containing a mapping of feature name to a list of warning (can be empty).
@@ -258,14 +258,14 @@ class Datasource(APIResource):
             hidden (Optional[List[str]]): ???
             wait (Optional[bool]): Should call be synchronous or not.
             skip_if_exists (Optional[bool]): Check if dataset with same name exists and skip if true.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Dataset ID if successful or dataset data if wait=True, raises FireflyError otherwise.
         """
-        return firefly.Dataset.create(datasource_id, dataset_name, target, problem_type, header, na_values,
-                                      retype_columns, rename_columns, datetime_format, time_axis, block_id, sample_id,
-                                      subdataset_id, sample_weight, not_used, hidden, wait, skip_if_exists, api_key)
+        return fireflyai.Dataset.create(datasource_id, dataset_name, target, problem_type, header, na_values,
+                                        retype_columns, rename_columns, datetime_format, time_axis, block_id, sample_id,
+                                        subdataset_id, sample_weight, not_used, hidden, wait, skip_if_exists, api_key)
 
     @classmethod
     def __get_upload_details(cls, api_key: str = None):

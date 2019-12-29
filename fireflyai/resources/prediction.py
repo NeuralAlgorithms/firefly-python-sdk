@@ -8,9 +8,9 @@ as well as querying of predictions (Get, List and Delete).
 """
 from typing import Dict
 
-from firefly.api_requestor import APIRequestor
-from firefly.firefly_response import FireflyResponse
-from firefly.resources.api_resource import APIResource
+from fireflyai.api_requestor import APIRequestor
+from fireflyai.firefly_response import FireflyResponse
+from fireflyai.resources.api_resource import APIResource
 
 
 class Prediction(APIResource):
@@ -31,7 +31,7 @@ class Prediction(APIResource):
             page_size (Optional[int]): For pagination, how many records will appear in a single page.
             sort (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to sort the results by.
             filter_ (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to filter the results by.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Predictions, which are represented as nested dictionaries under `hits`.
@@ -48,7 +48,7 @@ class Prediction(APIResource):
 
         Args:
             id (int): Prediction ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: Information on the Prediction if it exists, raises FireflyClientError otherwise.
@@ -62,7 +62,7 @@ class Prediction(APIResource):
 
         Args:
             id (int): Prediction ID.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: "done" if deleted successfuly, raises FireflyClientError otherwise.
@@ -81,7 +81,7 @@ class Prediction(APIResource):
         Args:
             ensemble_id (int): Ensemble to use for the prediction.
             data_id (int): Datasource to run the prediction on.
-            api_key (Optional[str]): Explicit api_key, not required if `firefly.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
             FireflyResponse: ID for the Prediction task that has been created on the server.

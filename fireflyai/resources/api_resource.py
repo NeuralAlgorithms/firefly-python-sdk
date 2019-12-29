@@ -3,8 +3,8 @@ from typing import Dict
 
 import requests
 
-from firefly.api_requestor import APIRequestor
-from firefly.firefly_response import FireflyResponse
+from fireflyai.api_requestor import APIRequestor
+from fireflyai.firefly_response import FireflyResponse
 
 
 class APIResource(object):
