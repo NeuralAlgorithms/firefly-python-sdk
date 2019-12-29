@@ -37,6 +37,7 @@ setup(
         'pytest==3.1.0',
     ],
     install_requires=[
-        "requests==2.20.0"
+        "requests==2.20.0",
+        "boto3==1.10.39"
     ],
 )
