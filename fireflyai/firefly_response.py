@@ -1,5 +1,5 @@
 class FireflyResponse(object):
-    def __init__(self, data: dict = None, headers: dict = None, status_code: str = None):
+    def __init__(self, data: dict = None, headers: dict = None, status_code: int = None):
         self.headers = headers or {}
         self._data = data or {}
         self.status_code = status_code
@@ -21,7 +21,4 @@ class FireflyResponse(object):
 
     @property
     def request_id(self):
-        try:
-            return self.headers["X-Request-ID"]
-        except Exception:
-            return None
+        return self.headers.get("X-Request-ID", None)

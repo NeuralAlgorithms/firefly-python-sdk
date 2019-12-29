@@ -8,5 +8,4 @@ def authenticate(username, password):
 
     requestor = APIRequestor()
     response = requestor.post(url, body={'username': username, 'password': password, 'tnc': None}, api_key="")
-    fireflyai.token = response['token']
-    return FireflyResponse(data={'token': fireflyai.token})
+    return FireflyResponse(status_code=response.status_code, headers=response.headers)

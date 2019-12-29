@@ -10,8 +10,6 @@ from fireflyai.firefly_response import FireflyResponse
 
 
 class APIRequestor(object):
-    BASE_URL = "api.firefly.ai"
-
     def __init__(self, http_client=None):
         if http_client is None:
             self._http_client = requests
@@ -78,15 +76,20 @@ class APIRequestor(object):
         else:
             if response_json:
                 if 'result' in response_json and isinstance(response_json['result'], dict):
-                    return FireflyResponse(data=response_json.get('result', response_json), headers=response.headers, status_code=response.status_code)
+                    return FireflyResponse(data=response_json.get('result', response_json), headers=response.headers,
+                                           status_code=response.status_code)
                 elif 'result' in response_json and isinstance(response_json['result'], bool):
-                    return FireflyResponse(data=response_json, headers=response.headers, status_code=response.status_code)
+                    return FireflyResponse(data=response_json, headers=response.headers,
+                                           status_code=response.status_code)
                 elif 'result' in response_json and isinstance(response_json['result'], int):
-                    return FireflyResponse(data={'id': response_json['result']}, headers=response.headers, status_code=response.status_code)
+                    return FireflyResponse(data={'id': response_json['result']}, headers=response.headers,
+                                           status_code=response.status_code)
                 elif 'result' in response_json and isinstance(response_json['result'], list):
-                    return FireflyResponse(data=response_json, headers=response.headers, status_code=response.status_code)
+                    return FireflyResponse(data=response_json, headers=response.headers,
+                                           status_code=response.status_code)
                 else:
-                    return FireflyResponse(data={'result': response_json}, headers=response.headers, status_code=response.status_code)
+                    return FireflyResponse(data={'result': response_json}, headers=response.headers,
+                                           status_code=response.status_code)
             else:
                 return FireflyResponse(headers=response.headers, status_code=response.status_code)
 
@@ -110,19 +113,3 @@ class APIRequestor(object):
                                    "or use `FIREFLY_TOKEN` environment variable to manually use on."
                                    "If problem persists, please contact support.")
         return fireflyai.token
-
-    def _parse_filter_parameters(self, filter):
-        if filter:
-            filters = []
-            for field, values in filter.items():
-                for value in values:
-                    filters.append("{}:{}".format(field, value))
-            return filters
-
-    def _parse_sort_parameters(self, sort):
-        assert sort is None or isinstance(sort, OrderedDict)
-        if sort:
-            sorts = []
-            for field, value in sort.items():
-                sorts.append('{}:{}'.format(field, value))
-            return sorts

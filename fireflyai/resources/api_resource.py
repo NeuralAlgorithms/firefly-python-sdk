@@ -18,7 +18,7 @@ class APIResource(object):
         # Namespaces are separated in object names with periods (.) and in URLs
         # with forward slashes (/), so replace the former with the latter.
         base = cls._CLASS_PREFIX.replace(".", "/")
-        return "%s" % (base,)
+        return base
 
     @classmethod
     def _list(cls, search_term: str = None, page: int = None, page_size: int = None, sort: Dict = None,
