@@ -27,7 +27,7 @@ class APIResource(object):
 
         filters = requestor.parse_filter_parameters(filter_)
         sorts = requestor.parse_sort_parameters(sort)
-        params = {'search_term': search_term,
+        params = {'search_all_columns': search_term,
                   'page': page, 'page_size': page_size,
                   'sort': sorts, 'filter': filters
                   }
