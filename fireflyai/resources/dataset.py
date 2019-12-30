@@ -14,7 +14,7 @@ from fireflyai import utils
 from fireflyai.api_requestor import APIRequestor
 from fireflyai.enums import ProblemType, FeatureType, Estimator, TargetMetric, SplittingStrategy, Pipeline, \
     InterpretabilityLevel, ValidationStrategy, CVStrategy
-from fireflyai.errors import APIError
+from fireflyai.errors import APIError, InvalidRequestError
 from fireflyai.firefly_response import FireflyResponse
 from fireflyai.resources.api_resource import APIResource
 
@@ -136,7 +136,7 @@ class Dataset(APIResource):
             if skip_if_exists:
                 return FireflyResponse(data=existing_ds['hits'][0])
             else:
-                raise APIError("Dataset with that name already exists")
+                raise InvalidRequestError("Dataset with that name already exists")
 
         data = {
             "name": dataset_name,

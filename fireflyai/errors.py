@@ -1,24 +1,28 @@
-import abc
-import logging
-
-logger = logging.getLogger('clients')
-
-
-class FireflyClientError(Exception, abc.ABC):
-    MESSAGE = "Please contact support"
-
-    def __init__(self, message=None):
-        self.indicative = True
-        super().__init__(message or self.MESSAGE)
+from typing import Dict
 
 
 class FireflyError(Exception):
-    def __init__(self, message=None):
-        self.message = message
+    MESSAGE = "Please contact support"
 
-    # def __repr__(self):
+    def __init__(self, message: str = None, json_body: str = None, headers: Dict = None, code: int = None):
+        super().__init__(message or self.MESSAGE)
 
-    # def __str__(self):
+        self._message = message
+        self.json_body = json_body
+        self.headers = headers or {}
+        self.code = code
+        self.request_id = self.headers.get('X-Request-ID', None)
+
+    def __str__(self):
+        msg = self._message or "<empty message>"
+        if self.request_id is not None:
+            return "Request {0}: {1}".format(self.request_id, msg)
+        else:
+            return msg
+
+
+class InvalidRequestError(FireflyError):
+    pass
 
 
 class APIError(FireflyError):
@@ -33,32 +37,5 @@ class AuthenticationError(FireflyError):
     pass
 
 
-# class ErrorCodes:
-#     MAP = {
-#         0: FireflyClientError
-#     }
-#
-#     @classmethod
-#     def get_code(cls, e):
-#         reverse_map = dict((v, k) for k, v in cls.MAP.items())
-#         return reverse_map.get(e.__class__, 0)
-#
-#     @classmethod
-#     def get_code_by_class(cls, value):
-#         reverse_map = dict((v, k) for k, v in cls.DS_CODES.items())
-#         return reverse_map.get(value, 0)
-#
-#     @classmethod
-#     def get_message(cls, code):
-#         return cls.MAP.get(code, cls.MAP[0]).MESSAGE
-#
-#
-class ServiceException(Exception):
+class PermissionError(AuthenticationError):
     pass
-#
-#
-# class DSClientException(FireflyClientError):
-#     pass
-#
-# class UMClientException(FireflyClientError):
-#     pass
