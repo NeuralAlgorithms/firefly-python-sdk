@@ -94,7 +94,7 @@ class Dataset(APIResource):
         return cls._delete(id, api_key)
 
     @classmethod
-    def create(cls, datasource_id: int, dataset_name: str, target: str, problem_type: ProblemType, header: bool,
+    def create(cls, datasource_id: int, dataset_name: str, target: str, problem_type: ProblemType, header: bool = True,
                na_values: List[str] = None, retype_columns: Dict[str, FeatureType] = None,
                rename_columns: List[str] = None, datetime_format: str = None, time_axis: str = None,
                block_id: List[str] = None, sample_id: List[str] = None, subdataset_id: List[str] = None,
@@ -169,11 +169,11 @@ class Dataset(APIResource):
         return response
 
     @classmethod
-    def train(cls, task_name: str, estimators: List[Estimator], target_metric: TargetMetric, dataset_id: int,
-              splitting_strategy: SplittingStrategy, notes: str = None, ensemble_size: int = None,
+    def train(cls, task_name: str, dataset_id: int, estimators: List[Estimator], target_metric: TargetMetric = None,
+              splitting_strategy: SplittingStrategy = None, notes: str = None, ensemble_size: int = None,
               max_models_num: int = None, single_model_timeout: int = None, pipeline: List[Pipeline] = None,
               prediction_latency: int = None, interpretability_level: InterpretabilityLevel = None,
-              timeout: int = None, cost_matrix_weights: List[List[str]] = None, train_size: float = None,
+              timeout: int = 7200, cost_matrix_weights: List[List[str]] = None, train_size: float = None,
               test_size: float = None, validation_size: float = None, fold_size: int = None, n_folds: int = None,
               horizon: int = None, validation_strategy: ValidationStrategy = None, cv_strategy: CVStrategy = None,
               forecast_horizon: int = None, model_life_time: int = None, refit_on_all: bool = None, wait: bool = False,
@@ -188,10 +188,10 @@ class Dataset(APIResource):
 
         Args:
             task_name (str): Task's name.
+            dataset_id (int): Dataset ID of the training data.
             estimators (List[Estimator]): Estimators to use in the train task.
             target_metric (TargetMetric): The target metric is the metric the model hyperparameter search process
                 attempts to optimize.
-            dataset_id (int): Dataset ID of the training data.
             splitting_strategy (SplittingStrategy): Splitting strategy of the data.
             notes (Optional[str]): Notes of the task.
             ensemble_size (Optional[int]): Maximum number for models in ensemble.
@@ -201,7 +201,7 @@ class Dataset(APIResource):
             prediction_latency (Optional[int]): Maximum number of seconds ensemble prediction should take.
             interpretability_level (Optional[InterpretabilityLevel]): Determines how interpertable your ensemble is. Higher level
                 of interpretability leads to more interpretable ensembles
-            timeout (Optional[int]): timeout for the search process.
+            timeout (Optional[int]): timeout in seconds for the search process (default: 2 hours).
             cost_matrix_weights (Optional[List[List[str]]]): For classification and anomaly detection problems, the weights allow
                 determining a custom cost metric, which assigns different weights to the entries of the confusion matrix.
             train_size (Optional[int]): The ratio of data taken for the train set of the model.
@@ -223,7 +223,7 @@ class Dataset(APIResource):
         Returns:
             FireflyResponse: Task ID if successful or task data if wait=True, raises FireflyError otherwise.
         """
-        return fireflyai.Task.create(task_name, estimators, target_metric, dataset_id, splitting_strategy, notes,
+        return fireflyai.Task.create(task_name, dataset_id, estimators, target_metric, splitting_strategy, notes,
                                      ensemble_size, max_models_num, single_model_timeout, pipeline, prediction_latency,
                                      interpretability_level, timeout, cost_matrix_weights, train_size, test_size,
                                      validation_size, fold_size, n_folds, validation_strategy, cv_strategy, horizon,
