@@ -230,21 +230,67 @@ class Dataset(APIResource):
                                      forecast_horizon, model_life_time, refit_on_all, wait, skip_if_exists, api_key)
 
     @classmethod
-    def get_available_configuration_options(cls, id: int, presets=None, api_key: str = None) -> FireflyResponse:
+    def get_available_estimators(cls, id: int, presets: Dict = None, api_key: str = None) -> FireflyResponse:
         """
-        Get possible configurations for a specific dataset.
-
-        Return lists of possible values for estimators, pipelines, target metrics and splitting strategies for the
-        specified dataset.
+        Get possible estimators for a specific dataset.
 
         Args:
-            dataset_id (int): Dataset ID to get possible configuration.
-            presets (Optional[dict]): Dictionary with presets for the configuration.
+            id (int): Dataset ID to get possible estimators.
+            presets (Optional[dict]): Dictionary with presets.
             api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
-            Dictionary containing lists of possible values for parameters.
+            FireflyResponse: List of possible values for estimators.
         """
+        return cls._get_available_configuration_options(id=id, presets=presets, api_key=api_key)['estimators']
+
+    @classmethod
+    def get_available_pipeline(cls, id: int, presets: Dict = None, api_key: str = None) -> FireflyResponse:
+        """
+        Get possible pipeline for a specific dataset.
+
+        Args:
+            id (int): Dataset ID to get possible pipeline.
+            presets (Optional[dict]): Dictionary with presets.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+
+        Returns:
+            FireflyResponse: List of possible values for pipeline.
+        """
+        return cls._get_available_configuration_options(id=id, presets=presets, api_key=api_key)['pipeline']
+
+    @classmethod
+    def get_available_splitting_strategy(cls, id: int, presets: Dict = None, api_key: str = None) -> FireflyResponse:
+        """
+        Get possible splitting strategies for a specific dataset.
+
+        Args:
+            id (int): Dataset ID to get possible splitting strategies.
+            presets (Optional[dict]): Dictionary with presets.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+
+        Returns:
+            FireflyResponse: List of possible values for splitting strategies.
+        """
+        return cls._get_available_configuration_options(id=id, presets=presets, api_key=api_key)['splitting_strategy']
+
+    @classmethod
+    def get_available_target_metric(cls, id: int, presets: Dict = None, api_key: str = None) -> FireflyResponse:
+        """
+        Get possible target metrics for a specific dataset.
+
+        Args:
+            id (int): Dataset ID to get possible target metrics.
+            presets (Optional[dict]): Dictionary with presets.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+
+        Returns:
+            FireflyResponse: List of possible values for target metrics.
+        """
+        return cls._get_available_configuration_options(id=id, presets=presets, api_key=api_key)['target_metric']
+
+    @classmethod
+    def _get_available_configuration_options(cls, id: int, presets=None, api_key: str = None) -> FireflyResponse:
         if presets is None:
             presets = {}
         requestor = APIRequestor()
