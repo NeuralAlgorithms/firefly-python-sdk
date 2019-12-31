@@ -5,7 +5,11 @@ from logging import NullHandler
 logger = logging.getLogger(__name__)
 logger.addHandler(NullHandler())
 
-ENDPOINT = 'api.firefly.ai'
+token = None
+api_base = 'https://api.firefly.ai'
 
-from firefly.client import Client
-from firefly import enums
+from fireflyai import enums
+from fireflyai.auth import authenticate
+from fireflyai.resources import *
+
+
