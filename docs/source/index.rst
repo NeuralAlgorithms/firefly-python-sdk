@@ -6,8 +6,6 @@
 Welcome to Firefly SDK's documentation!
 =======================================
 
-hello
-
 .. toctree::
    :maxdepth: 5
    :caption: Contents:
