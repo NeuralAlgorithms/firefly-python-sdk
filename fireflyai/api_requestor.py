@@ -5,7 +5,7 @@ import requests
 import uuid
 
 import fireflyai
-from fireflyai.errors import FireflyError, AuthenticationError, APIError
+from fireflyai.errors import AuthenticationError, APIError, InvalidRequestError, APIConnectionError, PermissionError
 from fireflyai.firefly_response import FireflyResponse
 
 
@@ -33,6 +33,12 @@ class APIRequestor(object):
             return sorts
 
     def request(self, method, url, headers=None, body=None, params=None, api_key=None):
+        if method not in ['GET', 'POST', 'PUT', 'DELETE']:
+            raise APIConnectionError(
+                "Unrecognized HTTP method {method}. This may indicate a bug in the Firefly "
+                "internal bindings. Please contact support for assistance.".format(method=method)
+            )
+
         if api_key is None:
             token = self._get_token()
         else:
@@ -67,56 +73,64 @@ class APIRequestor(object):
             response_json = response.json()
         except ValueError:
             pass
-        if response.status_code != 200:
-            if response.status_code == 400 and response_json:
-                # handled error. contains some description of the underlying error (but no traceback!)
-                raise self._handled(response)
-            else:  # unhandled error (500). contains only a description of the operation that failed (no traceback!)
-                raise self._unhandled(response)
+        if 200 <= response.status_code < 300:
+            return self._handle_ok(response, response_json)
         else:
-            if response_json:
-                return self._handle_json(response)
+            if 400 <= response.status_code < 500 and response_json:
+                raise self._handled(response)
             else:
-                return FireflyResponse(headers=response.headers, status_code=response.status_code)
+                raise self._unhandled(response)
 
-    def _handle_json(self, response):
-        response_json = response.json()
+    def _handle_ok(self, response, response_json):
+        if not response_json:
+            return FireflyResponse(headers=response.headers, status_code=response.status_code)
+
         if 'result' not in response_json:
-            result = FireflyResponse(data={'result': response_json}, headers=response.headers,
+            return FireflyResponse(data={'result': response_json}, headers=response.headers,
+                                   status_code=response.status_code)
+
+        response_type = type(response_json['result'])
+        if response_type == dict:
+            result = FireflyResponse(data=response_json.get('result', response_json), headers=response.headers,
+                                     status_code=response.status_code)
+        elif response_type == bool:
+            result = FireflyResponse(data=response_json, headers=response.headers,
+                                     status_code=response.status_code)
+        elif response_type == int:
+            result = FireflyResponse(data={'id': response_json['result']}, headers=response.headers,
                                      status_code=response.status_code)
         else:
-            response_type = type(response_json['result'])
-            if response_type == dict:
-                result = FireflyResponse(data=response_json.get('result', response_json), headers=response.headers,
-                                         status_code=response.status_code)
-            elif response_type == bool:
-                result = FireflyResponse(data=response_json, headers=response.headers,
-                                         status_code=response.status_code)
-            elif response_type == int:
-                result = FireflyResponse(data={'id': response_json['result']}, headers=response.headers,
-                                         status_code=response.status_code)
-            else:
-                result = FireflyResponse(data=response_json, headers=response.headers,
-                                         status_code=response.status_code)
+            result = FireflyResponse(data=response_json, headers=response.headers,
+                                     status_code=response.status_code)
         return result
 
     def _handled(self, response):
-        raise FireflyError(response.json()['error'])
+        response_json = response.json()
+        if response.status_code in [400, 404]:
+            err = InvalidRequestError(message=response_json['error'], headers=response.headers,
+                                      code=response.status_code, json_body=response_json)
+        elif response.status_code == 401:
+            err = AuthenticationError(message="Invalid token.", headers=response.headers,
+                                      code=response.status_code, json_body=response_json)
+        elif response.status_code == 403:
+            err = PermissionError(message=response_json['message'], headers=response.headers, code=response.status_code,
+                                  json_body=response_json)
+        else:
+            err = APIError(message=response_json['message'], headers=response.headers, code=response.status_code,
+                           json_body=response_json)
+        return err
 
     def _unhandled(self, response):
-        if response.status_code == 401:
-            raise AuthenticationError("token expired.")  # todo retry after renew
         try:
             raise APIError(response.json().get('error') or response.json().get('message'))
         except ValueError:
-            # logger.exception('reached endpoint but problem with api. status code {}'.format(response.status_code))
             raise APIError('API problem exception during request.')
 
     def _get_token(self):
         if fireflyai.token is None:
             fireflyai.token = os.getenv("FIREFLY_TOKEN", None)
             if fireflyai.token is None:
-                raise FireflyError("No token found. Please use `fireflyai.authenticate()` to create a token,"
-                                   "or use `FIREFLY_TOKEN` environment variable to manually use on."
-                                   "If problem persists, please contact support.")
+                raise AuthenticationError("No token found. Please use `fireflyai.authenticate()` to create a token,"
+                                          "or use `FIREFLY_TOKEN` environment variable to manually use one."
+                                          "If problem persists, please contact support.")
         return fireflyai.token
