@@ -268,7 +268,7 @@ class ProblemType(Enum):
     CLASSIFICATION = 'classification'
     REGRESSION = 'regression'
     ANOMALY_DETECTION = 'anomaly_detection'
-    TIMESERIES_CALSSIFICATION = 'classification_timeseries'
+    TIMESERIES_CLASSIFICATION = 'classification_timeseries'
     TIMESERIES_REGRESSION = 'regression_timeseries'
     TIMESERIES_ANOMALY_DETECTION = 'anomaly_timeseries'
 

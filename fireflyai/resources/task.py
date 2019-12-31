@@ -14,10 +14,11 @@ In addition, it is possible to use ensembles to perform predictions, as well as 
 """
 from typing import Dict, List
 
+import fireflyai
 from fireflyai import utils
 from fireflyai.api_requestor import APIRequestor
 from fireflyai.enums import Estimator, Pipeline, InterpretabilityLevel, ValidationStrategy, SplittingStrategy, \
-    TargetMetric, CVStrategy
+    TargetMetric, CVStrategy, ProblemType
 from fireflyai.errors import APIError, InvalidRequestError
 from fireflyai.firefly_response import FireflyResponse
 from fireflyai.resources.api_resource import APIResource
@@ -98,11 +99,11 @@ class Task(APIResource):
         return cls._delete(id, api_key)
 
     @classmethod
-    def create(cls, name: str, estimators: List[Estimator], target_metric: TargetMetric, dataset_id: int,
-               splitting_strategy: SplittingStrategy, notes: str = None, ensemble_size: int = None,
+    def create(cls, name: str, dataset_id: int, estimators: List[Estimator], target_metric: TargetMetric = None,
+               splitting_strategy: SplittingStrategy = None, notes: str = None, ensemble_size: int = None,
                max_models_num: int = None, single_model_timeout: int = None, pipeline: List[Pipeline] = None,
                prediction_latency: int = None, interpretability_level: InterpretabilityLevel = None,
-               timeout: int = None, cost_matrix_weights: List[List[str]] = None, train_size: float = None,
+               timeout: int = 7200, cost_matrix_weights: List[List[str]] = None, train_size: float = None,
                test_size: float = None, validation_size: float = None, fold_size: int = None, n_folds: int = None,
                horizon: int = None, validation_strategy: ValidationStrategy = None, cv_strategy: CVStrategy = None,
                forecast_horizon: int = None, model_life_time: int = None, refit_on_all: bool = None, wait: bool = False,
@@ -116,10 +117,10 @@ class Task(APIResource):
 
         Args:
             name (str): Task's name.
+            dataset_id (int): Dataset ID of the training data.
             estimators (List[Estimator]): Estimators to use in the train task.
             target_metric (TargetMetric): The target metric is the metric the model hyperparameter search process
                 attempts to optimize.
-            dataset_id (int): Dataset ID of the training data.
             splitting_strategy (SplittingStrategy): Splitting strategy of the data.
             notes (Optional[str]): Notes of the task.
             ensemble_size (Optional[int]): Maximum number for models in ensemble.
@@ -129,7 +130,7 @@ class Task(APIResource):
             prediction_latency (Optional[int]): Maximum number of seconds ensemble prediction should take.
             interpretability_level (Optional[InterpretabilityLevel]): Determines how interpertable your ensemble is. Higher level
                 of interpretability leads to more interpretable ensembles
-            timeout (Optional[int]): timeout for the search process.
+            timeout (Optional[int]): timeout in seconds for the search process (default: 2 hours).
             cost_matrix_weights (Optional[List[List[str]]]): For classification and anomaly detection problems, the weights allow
                 determining a custom cost metric, which assigns different weights to the entries of the confusion matrix.
             train_size (Optional[int]): The ratio of data taken for the train set of the model.
@@ -158,7 +159,16 @@ class Task(APIResource):
             else:
                 raise InvalidRequestError("Task with that name already exists")
 
-        task_config = {
+        try:
+            dataset = fireflyai.Dataset.get(id=dataset_id, api_key=api_key)
+        except InvalidRequestError as e:
+            raise e
+
+        problem_type = ProblemType(dataset['problem_type'])
+
+        task_config = cls._get_config_defaults(problem_type=problem_type, inter_level=interpretability_level)
+
+        user_config = {
             'dataset_id': dataset_id,
             'name': name,
             'estimators': [e.value for e in estimators] if estimators is not None else None,
@@ -185,6 +195,7 @@ class Task(APIResource):
             'notes': notes,
             'refit_on_all': refit_on_all
         }
+        task_config.update({k: v for k, v in user_config.items() if v})
 
         requestor = APIRequestor()
         response = requestor.post(url=cls._CLASS_PREFIX, body=task_config, api_key=api_key)
@@ -317,3 +328,28 @@ class Task(APIResource):
         url = '{prefix}/{task_id}/{op}'.format(prefix=cls._CLASS_PREFIX, task_id=task_id, op=op)
         response = requestor.post(url=url, api_key=api_key)
         return response
+
+    @classmethod
+    def _get_config_defaults(cls, problem_type, inter_level):
+        config = {}
+        if problem_type in [ProblemType.CLASSIFICATION, ProblemType.ANOMALY_DETECTION]:
+            config['target_metric'] = TargetMetric.RECALL_MACRO.value
+            config['splitting_strategy'] = SplittingStrategy.STRATIFIED.value
+        elif problem_type in [ProblemType.TIMESERIES_CLASSIFICATION, ProblemType.TIMESERIES_ANOMALY_DETECTION]:
+            config['target_metric'] = TargetMetric.RECALL_MACRO.value
+            config['splitting_strategy'] = SplittingStrategy.TIME_ORDER.value
+        elif problem_type == ProblemType.TIMESERIES_REGRESSION:
+            config['target_metric'] = TargetMetric.MAE.value
+            config['splitting_strategy'] = SplittingStrategy.TIME_ORDER.value
+        elif problem_type == ProblemType.REGRESSION:
+            config['target_metric'] = TargetMetric.R2.value
+            config['splitting_strategy'] = SplittingStrategy.STRATIFIED.value
+
+        if inter_level == InterpretabilityLevel.PRECISE:
+            config['ensemble_size'] = 5
+            config['max_models_num'] = 200
+        else:
+            config['ensemble_size'] = 1
+            config['max_models_num'] = 20
+
+        return config

@@ -226,8 +226,8 @@ class Datasource(APIResource):
         return response
 
     @classmethod
-    def prepare_data(cls, datasource_id: int, dataset_name: str, target: str, problem_type: ProblemType, header: bool,
-                     na_values: List[str] = None, retype_columns: Dict[str, FeatureType] = None,
+    def prepare_data(cls, datasource_id: int, dataset_name: str, target: str, problem_type: ProblemType,
+                     header: bool = True, na_values: List[str] = None, retype_columns: Dict[str, FeatureType] = None,
                      rename_columns: List[str] = None, datetime_format: str = None, time_axis: str = None,
                      block_id: List[str] = None, sample_id: List[str] = None, subdataset_id: List[str] = None,
                      sample_weight: List[str] = None, not_used: List[str] = None, hidden: List[str] = False,
