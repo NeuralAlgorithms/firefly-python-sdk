@@ -8,6 +8,8 @@ as well as querying of predictions (Get, List and Delete).
 """
 from typing import Dict
 
+from fireflyai import utils
+
 from fireflyai.api_requestor import APIRequestor
 from fireflyai.firefly_response import FireflyResponse
 from fireflyai.resources.api_resource import APIResource
@@ -70,7 +72,7 @@ class Prediction(APIResource):
         return cls._delete(id, api_key)
 
     @classmethod
-    def create(cls, ensemble_id: int, data_id: int, api_key: str = None) -> FireflyResponse:
+    def create(cls, ensemble_id: int, data_id: int, wait: bool = None, api_key: str = None) -> FireflyResponse:
         """
         Create a prediction from a given ensemble and prediction datasource.
 
@@ -81,6 +83,7 @@ class Prediction(APIResource):
         Args:
             ensemble_id (int): Ensemble to use for the prediction.
             data_id (int): Datasource to run the prediction on.
+            wait (Optional[bool]): Should call be synchronous or not.
             api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
 
         Returns:
@@ -93,4 +96,11 @@ class Prediction(APIResource):
 
         requestor = APIRequestor()
         response = requestor.post(url=cls._CLASS_PREFIX, body=data, api_key=api_key)
+        id = response['id']
+        if wait:
+            utils.wait_for_finite_state(cls.get, id, api_key=api_key)
+            response = cls.get(id, api_key=api_key)
+        else:
+            response = FireflyResponse(data={'id': id})
+
         return response
