@@ -97,7 +97,7 @@ class Task(APIResource):
         return cls._delete(id, api_key)
 
     @classmethod
-    def create(cls, name: str, dataset_id: int, estimators: List[Estimator], target_metric: TargetMetric = None,
+    def create(cls, name: str, dataset_id: int, estimators: List[Estimator] = None, target_metric: TargetMetric = None,
                splitting_strategy: SplittingStrategy = None, notes: str = None, ensemble_size: int = None,
                max_models_num: int = None, single_model_timeout: int = None, pipeline: List[Pipeline] = None,
                prediction_latency: int = None, interpretability_level: InterpretabilityLevel = None,
@@ -165,7 +165,8 @@ class Task(APIResource):
 
         problem_type = ProblemType(dataset['problem_type'])
 
-        task_config = cls._get_config_defaults(problem_type=problem_type, inter_level=interpretability_level)
+        task_config = cls._get_config_defaults(dataset_id=dataset_id, problem_type=problem_type,
+                                               inter_level=interpretability_level)
 
         user_config = {
             'dataset_id': dataset_id,
@@ -327,7 +328,7 @@ class Task(APIResource):
         return response
 
     @classmethod
-    def _get_config_defaults(cls, problem_type, inter_level):
+    def _get_config_defaults(cls, dataset_id, problem_type, inter_level, api_key=None):
         config = {}
         if problem_type in [ProblemType.CLASSIFICATION, ProblemType.ANOMALY_DETECTION]:
             config['target_metric'] = TargetMetric.RECALL_MACRO.value
@@ -348,5 +349,11 @@ class Task(APIResource):
         else:
             config['ensemble_size'] = 1
             config['max_models_num'] = 20
+
+        estimators = fireflyai.Dataset.get_available_estimators(id=dataset_id, inter_level=inter_level)
+        pipeline = fireflyai.Dataset.get_available_pipeline(id=dataset_id, inter_level=inter_level)
+
+        config['estimators'] = [e.value for e in estimators] if estimators is not None else None
+        config['pipeline'] = [p.value for p in pipeline] if pipeline is not None else None
 
         return config

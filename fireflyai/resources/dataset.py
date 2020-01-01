@@ -169,7 +169,7 @@ class Dataset(APIResource):
         return response
 
     @classmethod
-    def train(cls, task_name: str, dataset_id: int, estimators: List[Estimator], target_metric: TargetMetric = None,
+    def train(cls, task_name: str, dataset_id: int, estimators: List[Estimator] = None, target_metric: TargetMetric = None,
               splitting_strategy: SplittingStrategy = None, notes: str = None, ensemble_size: int = None,
               max_models_num: int = None, single_model_timeout: int = None, pipeline: List[Pipeline] = None,
               prediction_latency: int = None, interpretability_level: InterpretabilityLevel = None,
@@ -228,72 +228,78 @@ class Dataset(APIResource):
                                      forecast_horizon, model_life_time, refit_on_all, wait, skip_if_exists, api_key)
 
     @classmethod
-    def get_available_estimators(cls, id: int, presets: Dict = None, api_key: str = None) -> FireflyResponse:
+    def get_available_estimators(cls, id: int, inter_level: InterpretabilityLevel = None,
+                                 api_key: str = None) -> FireflyResponse:
         """
         Gets possible Estimators for a specific Dataset.
 
         Args:
             id (int): Dataset ID.
-            presets (Optional[dict]): Dictionary with presets.
+            inter_level (Optional[InterpretabilityLevel]): Interpretability level.
             api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: List of possible values for estimators.
         """
-        return cls._get_available_configuration_options(id=id, presets=presets, api_key=api_key)['estimators']
+        return cls._get_available_configuration_options(id=id, inter_level=inter_level, api_key=api_key)['estimators']
 
     @classmethod
-    def get_available_pipeline(cls, id: int, presets: Dict = None, api_key: str = None) -> FireflyResponse:
+    def get_available_pipeline(cls, id: int, inter_level: InterpretabilityLevel = None,
+                               api_key: str = None) -> FireflyResponse:
         """
         Gets possible pipeline for a specific dataset.
 
         Args:
             id (int): Dataset ID to get possible pipeline.
-            presets (Optional[dict]): Dictionary with presets.
+            inter_level (Optional[InterpretabilityLevel]): Interpretability level.
             api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: List of possible values for pipeline.
         """
-        return cls._get_available_configuration_options(id=id, presets=presets, api_key=api_key)['pipeline']
+        return cls._get_available_configuration_options(id=id, inter_level=inter_level, api_key=api_key)['pipeline']
 
     @classmethod
-    def get_available_splitting_strategy(cls, id: int, presets: Dict = None, api_key: str = None) -> FireflyResponse:
+    def get_available_splitting_strategy(cls, id: int, inter_level: InterpretabilityLevel = None,
+                                         api_key: str = None) -> FireflyResponse:
         """
         Gets possible splitting strategies for a specific dataset.
 
         Args:
             id (int): Dataset ID to get possible splitting strategies.
-            presets (Optional[dict]): Dictionary with presets.
+            inter_level (Optional[InterpretabilityLevel]): Interpretability level.
             api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: List of possible values for splitting strategies.
         """
-        return cls._get_available_configuration_options(id=id, presets=presets, api_key=api_key)['splitting_strategy']
+        return cls._get_available_configuration_options(id=id, inter_level=inter_level, api_key=api_key)[
+            'splitting_strategy']
 
     @classmethod
-    def get_available_target_metric(cls, id: int, presets: Dict = None, api_key: str = None) -> FireflyResponse:
+    def get_available_target_metric(cls, id: int, inter_level: InterpretabilityLevel = None,
+                                    api_key: str = None) -> FireflyResponse:
         """
         Gets possible target metrics for a specific dataset.
 
         Args:
             id (int): Dataset ID to get possible target metrics.
-            presets (Optional[dict]): Dictionary with presets.
+            inter_level (Optional[InterpretabilityLevel]): Interpretability level.
             api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: List of possible values for target metrics.
         """
-        return cls._get_available_configuration_options(id=id, presets=presets, api_key=api_key)['target_metric']
+        return cls._get_available_configuration_options(id=id, inter_level=inter_level, api_key=api_key)[
+            'target_metric']
 
     @classmethod
-    def _get_available_configuration_options(cls, id: int, presets=None, api_key: str = None) -> FireflyResponse:
-        if presets is None: #TODO: remove `presets` completely and use inter_level
-            presets = {}
+    def _get_available_configuration_options(cls, id: int, inter_level: InterpretabilityLevel = None,
+                                             api_key: str = None) -> FireflyResponse:
+        inter_level = inter_level.value if inter_level is not None else None
         requestor = APIRequestor()
         url = "tasks/configuration/options"
-        response = requestor.get(url=url, params={'dataset_id': id, **presets}, api_key=api_key)
+        response = requestor.get(url=url, params={'dataset_id': id, 'interpretable': inter_level}, api_key=api_key)
         new_data = {
             'estimators': [Estimator(e) for e in response['estimators']],
             'target_metric': [TargetMetric(e) for e in response['target_metric']],
