@@ -1,13 +1,10 @@
 """
-An ensemble is the main entity that represents the result of a machine learning training process (done using the
-‘task’ entity). An ensemble is a combination of one or more machine learning models optimized for the dataset and model
-training configuration (target metric, selected algorithms etc.).
+Ensemble is the entity representing results of the training process (done using the `Task` entity).
+It consists of a combination of one or more models, optimized for the dataset and model training configuration.
 
-To be able to work with ensembles, users can invoke the Get List ensembles API, which is a part of the ‘tasks’ entity.
-
-‘Ensembles’ APIs include querying existing ensembles (Get and List), but also the Refit ensemble which allows users to
-keep their machine learning models updated. In the future explainability features such as ROC curve, Confusion matrix
-and other tools will be available as well.
+‘Ensemble’ API includes querying existing Ensembles (Get and List), but also the `refit` method, which allows users to
+maintain updated models.
+Future explainability features such as ROC curve, confusion matrix and other tools will be available as well.
 """
 from typing import Dict
 
@@ -23,60 +20,60 @@ class Ensemble(APIResource):
     def list(cls, search_term: str = None, page: int = None, page_size: int = None, sort: Dict = None,
              filter_: Dict = None, api_key: str = None) -> FireflyResponse:
         """
-        List the existing tasks. Supports filtering, sorting and pagination.
+        List the existing Ensembles - supports filtering, sorting and pagination.
 
         Args:
-            search_term (Optional[str]): Return only records that contain the search_term in one of their fields.
+            search_term (Optional[str]): Return only records that contain the `search_term` in any field.
             page (Optional[int]): For pagination, which page to return.
             page_size (Optional[int]): For pagination, how many records will appear in a single page.
-            sort (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to sort the results by.
-            filter (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to filter the results by.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            sort (Optional[Dict[str, Union[str, int]]]): Dictionary of rules  to sort the results by.
+            filter_ (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to filter the results by.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
 
         Returns:
-            FireflyResponse: Ensembles, which are represented as nested dictionaries under `hits`.
+            FireflyResponse: Ensembles are represented as nested dictionaries under `hits`.
         """
         return cls._list(search_term, page, page_size, sort, filter_, api_key)
 
     @classmethod
     def get(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Get basic information of a specific ensemble.
+        Get information on a specific Ensemble.
 
-        Information includes the scores of the ensembles on various metrics
+        Information includes the state of the Ensemble and other attributes.
 
         Args:
             id (int): Ensemble ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
-            FireflyResponse: Information about the ensemble.
+            FireflyResponse: Information about the Ensemble.
         """
         return cls._get(id, api_key)
 
     @classmethod
     def delete(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Delete a specific ensemble.
+        Deletes a specific Ensemble.
 
         Args:
             id (int): Ensemble ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
 
         Returns:
-            FireflyResponse: "done" if deleted successfuly, raises FireflyClientError otherwise.
+            FireflyResponse: "true" if deleted successfuly, raises FireflyClientError otherwise.
         """
         return cls._delete(id, api_key)
 
     @classmethod
-    def edit_ensemble_notes(cls, id: int, notes: str, api_key: str = None) -> FireflyResponse:
+    def edit_notes(cls, id: int, notes: str, api_key: str = None) -> FireflyResponse:
         """
-        Edits an ensemble's notes.
+        Edits notes of the Ensemble.
 
         Args:
             id (int): Ensemble ID.
-            notes (str): Notes.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            notes (str): New notes value.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: "submitted" if operation was successful, raises FireflyClientError otherwise.
@@ -89,13 +86,13 @@ class Ensemble(APIResource):
     @classmethod
     def get_model_sensitivity_report(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Gets the sensitivity report for a specific ensemble.
+        Gets sensitivity report for Ensemble.
 
-        Contains each feature sensitivity score for missing values and feature value.
+        Contains each feature's sensitivity score for missing values and feature values.
 
         Args:
             id (int): Ensemble ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: Score for each feature in every sensitivity test.
@@ -110,11 +107,11 @@ class Ensemble(APIResource):
     @classmethod
     def get_ensemble_test_prediction_sample(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Get ensemble's prediction samples.
+        Gets prediction samples for Ensemble.
 
         Args:
             id (int): Ensemble ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: Prediction samples.
@@ -127,11 +124,11 @@ class Ensemble(APIResource):
     @classmethod
     def get_ensemble_summary_report(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Gets ensemble's summary report.
+        Gets summary report for Ensemble.
 
         Args:
             id (int): Ensemble ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: Summary report.
@@ -144,11 +141,11 @@ class Ensemble(APIResource):
     @classmethod
     def get_ensemble_roc_curve(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Gets ensemble's ROC curve data.
+        Gets ROC curve data for Ensemble.
 
         Args:
             id (int): Ensemble ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: ROC curve data.
@@ -161,11 +158,11 @@ class Ensemble(APIResource):
     @classmethod
     def get_ensemble_confusion_matrix(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Get ensemble's confusion matrix.
+        Gets confusion matrix for Ensemble.
 
         Args:
             id (int): Ensemble ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: Confusion matrix.
@@ -178,11 +175,11 @@ class Ensemble(APIResource):
     @classmethod
     def get_model_architecture(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Get ensemble's architecture.
+        Gets architecture of the Ensemble.
 
         Args:
             id (int): Ensemble ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: Architecture.
@@ -195,11 +192,11 @@ class Ensemble(APIResource):
     @classmethod
     def get_model_presentation(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Get ensemble's presentation.
+        Gets presentation of the Ensemble.
 
         Args:
             id (int): Ensemble ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: Ensemble's presentation.
@@ -212,11 +209,11 @@ class Ensemble(APIResource):
     @classmethod
     def generate_export_download_link(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Get a link to download the ensemble.
+        Generates link to download the Ensemble.
 
         Args:
             id (int): Ensemble ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: URL with which to download a TAR file containing the model.

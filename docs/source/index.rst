@@ -11,6 +11,7 @@ Welcome to Firefly SDK's documentation!
    :caption: Contents:
 
    modules
+   enums
 
 
 
