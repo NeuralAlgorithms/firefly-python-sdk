@@ -209,6 +209,43 @@ class Task(APIResource):
         return response
 
     @classmethod
+    def refit(cls, id: int, datasource_id: int, wait: bool = False, api_key: str = None) -> FireflyResponse:
+        """
+        Refits the task on a Datasource.
+
+        Args:
+            id (int): Task ID.
+            datasource_id (int): Datasource ID.
+            wait (Optional[bool]): Should the call be synchronous or not.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
+
+        Returns:
+            FireflyResponse: Ensemble ID, if successful and wait=False or Ensemble if successful and wait=True;
+            raises FireflyError otherwise.
+        """
+        data = {
+            "datasource_id": datasource_id,
+        }
+
+        ensemble_id = cls.get(id=id, api_key=api_key).get('ensemble_id', None)
+        if not ensemble_id:
+            raise InvalidRequestError(message="No ensemble exists for this Task.")
+
+        requestor = APIRequestor()
+        url = "ensembles/{ensemble_id}/refit".format(ensemble_id=ensemble_id)
+        response = requestor.post(url=url, body=data, api_key=api_key)
+        new_ens_id = response.get('ensemble_id')
+
+        if wait:
+            utils.wait_for_finite_state(fireflyai.Ensemble.get, new_ens_id, api_key=api_key)
+            response = fireflyai.Ensemble.get(new_ens_id, api_key=api_key)
+        else:
+            response = FireflyResponse(data={'id': new_ens_id}, headers=response.headers,
+                                       status_code=response.status_code)
+
+        return response
+
+    @classmethod
     def edit_notes(cls, id: int, notes: str, api_key: str = None) -> FireflyResponse:
         """
         Edits notes of the Task.
