@@ -1,16 +1,14 @@
 """
-The task entity represents the model training process when working with Firefly.ai's API. When users train a model,
-a task is created for that process using a previously created dataset as the input for the model.
+The task entity represents the model training process. When users train a model,
+a task is created for that process, using a Dataset as the input for the model.
 
-When creating a task, you should set the training configuration (e.g. target metric, ensemble size,
-data splitting: Holdout/CV, etc.), which will determine the way the model will be trained.
+When creating a Task, set the training configuration (e.g. target metric, ensemble size),
+which will determine the way the model is trained.
 
-One of the outputs of a model training task is an ensemble, a combination of one or more machine learning models
-optimized for the dataset and model training configuration (target metric, selected algorithms etc.).
-In addition, it is possible to use ensembles to perform predictions, as well as for other purposes.
+One of the outputs of a Task is an Ensemble; a combination of one or more models optimized for the Dataset and configuration.
+In addition, it is possible to use Ensembles to perform predictions, as well as other purposes.
 
-‘Tasks’ APIs include the creation of task for model training using a previously created dataset, querying existing tasks
-(Get, Gist, Gelete and Get configuration) as well as Get available configuration options to work with your dataset.
+‘Task’ API includes creating a task and querying existing tasks (Get, List, Delete and Get configuration).
 """
 from typing import Dict, List
 
@@ -31,51 +29,51 @@ class Task(APIResource):
     def list(cls, search_term: str = None, page: int = None, page_size: int = None, sort: Dict = None,
              filter_: Dict = None, api_key: str = None) -> FireflyResponse:
         """
-        List the existing tasks. Supports filtering, sorting and pagination.
+        List the existing Tasks - supports filtering, sorting and pagination.
 
         Args:
-            search_term (Optional[str]): Return only records that contain the search_term in one of their fields.
+            search_term (Optional[str]): Return only records that contain the `search_term` in any field.
             page (Optional[int]): For pagination, which page to return.
             page_size (Optional[int]): For pagination, how many records will appear in a single page.
-            sort (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to sort the results by.
+            sort (Optional[Dict[str, Union[str, int]]]): Dictionary of rules  to sort the results by.
             filter_ (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to filter the results by.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
 
         Returns:
-            FireflyResponse: Tasks, which are represented as nested dictionaries under `hits`.
+            FireflyResponse: Tasks are represented as nested dictionaries under `hits`.
         """
         return cls._list(search_term, page, page_size, sort, filter_, api_key)
 
     @classmethod
     def get(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Get information on a specific task.
+        Get information on a specific Task.
 
-        Information includes the state of the task, and other basic attributes
+        Information includes the state of the Task and other attributes.
 
         Args:
-            task_id (int): Task ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            id (int): Task ID.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
-            FireflyResponse: Task if exists, raises FireflyClientError otherwise.
+            FireflyResponse: Information about the Task.
         """
         return cls._get(id, api_key)
 
     @classmethod
     def get_by_name(cls, name: str, api_key: str = None) -> FireflyResponse:
         """
-        Get information on a specific task, identified by its name.
+        Gets information on a specific Task identified by its name.
 
-        Information includes the state of the task, and other basic attributes
+        Information includes the state of the Task and other attributes.
         Similar to calling `fireflyai.Task.list(filters_={'name': [NAME]})`.
 
         Args:
             name (str): Task name.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
-            FireflyResponse: Information about the dataset.
+            FireflyResponse: Information about the Task.
         """
         resp = cls.list(filter_={'name': [name]}, api_key=api_key)
         if resp and 'total' in resp and resp['total'] > 0:
@@ -87,11 +85,11 @@ class Task(APIResource):
     @classmethod
     def delete(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Delete a specific model.
+        Deletes a specific Task.
 
         Args:
             id (int): Task ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
 
         Returns:
             FireflyResponse: "true" if deleted successfuly, raises FireflyClientError otherwise.
@@ -99,7 +97,7 @@ class Task(APIResource):
         return cls._delete(id, api_key)
 
     @classmethod
-    def create(cls, name: str, dataset_id: int, estimators: List[Estimator], target_metric: TargetMetric = None,
+    def create(cls, name: str, dataset_id: int, estimators: List[Estimator] = None, target_metric: TargetMetric = None,
                splitting_strategy: SplittingStrategy = None, notes: str = None, ensemble_size: int = None,
                max_models_num: int = None, single_model_timeout: int = None, pipeline: List[Pipeline] = None,
                prediction_latency: int = None, interpretability_level: InterpretabilityLevel = None,
@@ -145,12 +143,13 @@ class Task(APIResource):
             model_life_time (Optional[int]): Something related to time-series models.
             refit_on_all (Optional[bool]): Determines if the final ensemble will be refit on all data after
                 search process is done.
-            wait (Optional[bool]): Should call be synchronous or not.
-            skip_if_exists (Optional[bool]): Check if train task with same name exists and skip if it does.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            wait (Optional[bool]): Should the call be synchronous or not.
+            skip_if_exists (Optional[bool]): Check if a Datasource with same name exists and skip if true.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
-            FireflyResponse: Task ID if successful or task data if wait=True, raises FireflyError otherwise.
+            FireflyResponse: Task ID, if successful and wait=False or Task if successful and wait=True;
+            raises FireflyError otherwise.
         """
         existing_ds = cls.list(filter_={'name': [name]}, api_key=api_key)
         if existing_ds and existing_ds['total'] > 0:
@@ -166,7 +165,8 @@ class Task(APIResource):
 
         problem_type = ProblemType(dataset['problem_type'])
 
-        task_config = cls._get_config_defaults(problem_type=problem_type, inter_level=interpretability_level)
+        task_config = cls._get_config_defaults(dataset_id=dataset_id, problem_type=problem_type,
+                                               inter_level=interpretability_level)
 
         user_config = {
             'dataset_id': dataset_id,
@@ -209,17 +209,58 @@ class Task(APIResource):
         return response
 
     @classmethod
+    def refit(cls, id: int, datasource_id: int, wait: bool = False, api_key: str = None) -> FireflyResponse:
+        """
+        Refits the chosen Ensemble of a Task on a specific Datasource.
+
+        A refit trains the chosen Ensemble's models with the data of the given Datasource. The model training is done
+        from scratch and uses all the given data. A new Ensemble is created that is made of all the refitted models of
+        the chosen Ensemble and their original combination.
+
+        Args:
+            id (int): Task ID.
+            datasource_id (int): Datasource ID.
+            wait (Optional[bool]): Should the call be synchronous or not.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
+
+        Returns:
+            FireflyResponse: Ensemble ID, if successful and wait=False or Ensemble if successful and wait=True;
+            raises FireflyError otherwise.
+        """
+        data = {
+            "datasource_id": datasource_id,
+        }
+
+        ensemble_id = cls.get(id=id, api_key=api_key).get('ensemble_id', None)
+        if not ensemble_id:
+            raise InvalidRequestError(message="No ensemble exists for this Task.")
+
+        requestor = APIRequestor()
+        url = "ensembles/{ensemble_id}/refit".format(ensemble_id=ensemble_id)
+        response = requestor.post(url=url, body=data, api_key=api_key)
+        new_ens_id = response.get('ensemble_id')
+
+        if wait:
+            utils.wait_for_finite_state(fireflyai.Ensemble.get, new_ens_id, api_key=api_key)
+            response = fireflyai.Ensemble.get(new_ens_id, api_key=api_key)
+        else:
+            response = FireflyResponse(data={'id': new_ens_id}, headers=response.headers,
+                                       status_code=response.status_code)
+
+        return response
+
+    @classmethod
     def edit_notes(cls, id: int, notes: str, api_key: str = None) -> FireflyResponse:
         """
-        Edit notes of a Task.
+        Edits notes of the Task.
 
         Args:
             id (int): Task ID.
             notes (str): New notes value.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
-            FireflyResponse: `task_id` value if successfull, raises FireflyError otherwise.
+            FireflyResponse: `task_id` value if successful, raises FireflyError otherwise.
         """
         requestor = APIRequestor()
         url = "{prefix}/{task_id}/notes".format(prefix=cls._CLASS_PREFIX, task_id=id)
@@ -229,16 +270,16 @@ class Task(APIResource):
     @classmethod
     def get_task_progress(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        List the existing ensembles` scores.
+        Lists existing Ensembles` scores.
 
-        Get the ensemble's scores produced so far by the task. Allows to see the progress of the task.
+        Get the Ensembles' scores produced thus far by the task. Enables you to track the progress of the task.
 
         Args:
-            id (int): Task ID to get progress of.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            id (int): Task ID.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
-            FireflyResponse:  List of all task's ensembles' scores.
+            FireflyResponse:  List of all the Task's Ensembles' scores.
         """
         requestor = APIRequestor()
         url = "{prefix}/{task_id}/progress".format(prefix=cls._CLASS_PREFIX, task_id=id)
@@ -248,16 +289,14 @@ class Task(APIResource):
     @classmethod
     def get_task_result(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Get full train task results.
-
-        Explain all the fields.
+        Gets full results of the Task.
 
         Args:
-            id (int): Task ID to return results of.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            id (int): Task ID.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
-            Dictionary of train task's results.
+            FireflyResponse: Task's full results.
         """
         requestor = APIRequestor()
         url = "{prefix}/{task_id}/results".format(prefix=cls._CLASS_PREFIX, task_id=id)
@@ -267,11 +306,11 @@ class Task(APIResource):
     @classmethod
     def rerun_task(cls, task_id: int, api_key: str = None) -> FireflyResponse:
         """
-        Rerun a task that has been completed or stopped.
+        Reruns a task that has been completed or stopped.
 
         Args:
             task_id (int): Task ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: "submitted" if operation was successful, raises FireflyClientError otherwise.
@@ -285,7 +324,7 @@ class Task(APIResource):
 
         Args:
             task_id (int): Task ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: "submitted" if operation was successful, raises FireflyClientError otherwise.
@@ -299,7 +338,7 @@ class Task(APIResource):
 
         Args:
             task_id (int): Task ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: "submitted" if operation was successful, raises FireflyClientError otherwise.
@@ -309,11 +348,11 @@ class Task(APIResource):
     @classmethod
     def resume_task(cls, task_id: int, api_key: str = None) -> FireflyResponse:
         """
-        Resume a paused task.
+        Resumes a paused task.
 
         Args:
             task_id (int): Task ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
             FireflyResponse: "submitted" if operation was successful, raises FireflyClientError otherwise.
@@ -330,7 +369,7 @@ class Task(APIResource):
         return response
 
     @classmethod
-    def _get_config_defaults(cls, problem_type, inter_level):
+    def _get_config_defaults(cls, dataset_id, problem_type, inter_level, api_key=None):
         config = {}
         if problem_type in [ProblemType.CLASSIFICATION, ProblemType.ANOMALY_DETECTION]:
             config['target_metric'] = TargetMetric.RECALL_MACRO.value
@@ -351,5 +390,11 @@ class Task(APIResource):
         else:
             config['ensemble_size'] = 1
             config['max_models_num'] = 20
+
+        estimators = fireflyai.Dataset.get_available_estimators(id=dataset_id, inter_level=inter_level)
+        pipeline = fireflyai.Dataset.get_available_pipeline(id=dataset_id, inter_level=inter_level)
+
+        config['estimators'] = [e.value for e in estimators] if estimators is not None else None
+        config['pipeline'] = [p.value for p in pipeline] if pipeline is not None else None
 
         return config

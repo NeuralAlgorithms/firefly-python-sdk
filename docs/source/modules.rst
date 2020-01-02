@@ -1,8 +1,8 @@
 Resources
-=======================================
+=========
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 2
    :caption: Contents:
 
    modules/datasource

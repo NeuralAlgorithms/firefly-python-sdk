@@ -1,10 +1,9 @@
 """
-In the context of Firefly.ai's API, 'predictions' is the way to productize the machine learning ensemble created in the
-previous steps. Once an ensemble is created, users can upload an additional datasource that will be used for performing
-the predictions.
+Prediction is the way to productize the Ensemble created in the previous steps. Once an Ensemble is created,
+users can upload additional Datasources that may be used for predictions.
 
-‘Predictions’ APIs includes Create prediction to get predictions for existing ensembles and the uploaded datasource,
-as well as querying of predictions (Get, List and Delete).
+‘Prediction’ API includes querying of predictions (Get, List and Delete) and creating a Prediction to get predictions
+on existing Ensembles and uploaded Datasources.
 """
 from typing import Dict
 
@@ -22,52 +21,48 @@ class Prediction(APIResource):
     def list(cls, search_term: str = None, page: int = None, page_size: int = None, sort: Dict = None,
              filter_: Dict = None, api_key: str = None) -> FireflyResponse:
         """
-        List all of the user's Predictions' metadata.
-
-        Returns a list containing all Predictions even run by the user, as dictionaries in a list. Every dict contains
-        metadata regarding the Prediction, same as returned with `get_predict_record`.
+        List the existing Predictions - supports filtering, sorting and pagination.
 
         Args:
-            search_term (Optional[str]): Return only records that contain the search_term in one of their fields.
+            search_term (Optional[str]): Return only records that contain the `search_term` in any field.
             page (Optional[int]): For pagination, which page to return.
             page_size (Optional[int]): For pagination, how many records will appear in a single page.
-            sort (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to sort the results by.
+            sort (Optional[Dict[str, Union[str, int]]]): Dictionary of rules  to sort the results by.
             filter_ (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to filter the results by.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
 
         Returns:
-            FireflyResponse: Predictions, which are represented as nested dictionaries under `hits`.
+            FireflyResponse: Predictions are represented as nested dictionaries under `hits`.
         """
         return cls._list(search_term, page, page_size, sort, filter_, api_key)
 
     @classmethod
     def get(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Get details on a Prediction batch.
+        Get information on a specific Prediction.
 
-        Returns a dict with metadata regarding the Prediction, e.g. run status, ensemble_id, data_id and
-        results path if the task has completed its run.
+        Information includes the state of the Prediction and other attributes.
 
         Args:
             id (int): Prediction ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
-            FireflyResponse: Information on the Prediction if it exists, raises FireflyClientError otherwise.
+            FireflyResponse: Information about the Prediction.
         """
         return cls._get(id, api_key)
 
     @classmethod
     def delete(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Deletes a Prediction batch from the server.
+        Deletes a specific Prediction.
 
         Args:
             id (int): Prediction ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
 
         Returns:
-            FireflyResponse: "done" if deleted successfuly, raises FireflyClientError otherwise.
+            FireflyResponse: "true" if deleted successfuly, raises FireflyClientError otherwise.
         """
         return cls._delete(id, api_key)
 
@@ -83,11 +78,12 @@ class Prediction(APIResource):
         Args:
             ensemble_id (int): Ensemble to use for the prediction.
             data_id (int): Datasource to run the prediction on.
-            wait (Optional[bool]): Should call be synchronous or not.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            wait (Optional[bool]): Should the call be synchronous or not.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
-            FireflyResponse: ID for the Prediction task that has been created on the server.
+            FireflyResponse: Prediction ID, if successful and wait=False or Prediction if successful and wait=True;
+            raises FireflyError otherwise.
         """
         data = {
             "ensemble_id": ensemble_id,

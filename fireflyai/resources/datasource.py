@@ -1,12 +1,9 @@
 """
-Working with Firefly.ai's API, datasources represent the raw CSV files that can be used either for model training
-purposes or for running batch predictions once they have been analyzed.
+While working with Firefly.ai's API, a Datasource represents the raw CSV files. This data  can be used either for model
+training purposes or for running batch predictions once they have been analyzed.
 
-In order to create a datasource, users need to upload a CSV file to S3. To upload files to S3 users need to use the
-‘Generate upload credentials’ API to access the correct upload credentials.
-
-‘Datasources’ APIs include the creation of a datasource from an uploaded CSV file, querying existing datasources
-(Get, List, Preview and Delete), and get datasource metadata such as Get feature types and Get type insights.
+‘Datasource’ API includes creating a Datasource from an uploaded CSV file, querying existing Datasources
+(Get, List, Preview and Delete) and getting Datasource metadata (e.g. feature types and type insights).
 """
 
 import io
@@ -29,51 +26,51 @@ class Datasource(APIResource):
     def list(cls, search_term: str = None, page: int = None, page_size: int = None, sort: Dict = None,
              filter_: Dict = None, api_key: str = None) -> FireflyResponse:
         """
-        List the existing datasources. Supports filtering, sorting and pagination.
+        Lists the existing Datasources - supports filtering, sorting and pagination.
 
         Args:
-            search_term (Optional[str]): Return only records that contain the search_term in one of their fields.
+            search_term (Optional[str]): Return only records that contain the `search_term` in any field.
             page (Optional[int]): For pagination, which page to return.
             page_size (Optional[int]): For pagination, how many records will appear in a single page.
-            sort (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to sort the results by.
+            sort (Optional[Dict[str, Union[str, int]]]): Dictionary of rules  to sort the results by.
             filter_ (Optional[Dict[str, Union[str, int]]]): Dictionary of rules to filter the results by.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
 
         Returns:
-            FireflyResponse: Datasources, which are represented as nested dictionaries under `hits`.
+            FireflyResponse: Datasources are represented as nested dictionaries under `hits`.
         """
         return cls._list(search_term, page, page_size, sort, filter_, api_key)
 
     @classmethod
     def get(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Get information on a specific datasource.
+        Gets information on a specific Datasource.
 
-        Information includes the state of the datasource, and other basic attributes.
+        Information includes the state of the Datasource and other attributes.
 
         Args:
             id (int): Datasource ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
-            FireflyResponse: Information about the datasource.
+            FireflyResponse: Information about the Datasource.
         """
         return cls._get(id, api_key)
 
     @classmethod
     def get_by_name(cls, name: str, api_key: str = None) -> FireflyResponse:
         """
-        Get information on a specific datasource, identified by its name.
+        Gets information on a specific Datasource identified by its name.
 
-        Information includes the state of the datasource, and other basic attributes.
+        Information includes the state of the Datasource and other attributes.
         Similar to calling `fireflyai.Datasource.list(filters_={'name': [NAME]})`.
 
         Args:
             name (str): Datasource name.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
-            FireflyResponse: Information about the datasource.
+            FireflyResponse: Information about the Datasource.
         """
         resp = cls.list(filter_={'name': [name]}, api_key=api_key)
         if resp and 'total' in resp and resp['total'] > 0:
@@ -85,11 +82,11 @@ class Datasource(APIResource):
     @classmethod
     def delete(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Delete a specific datasource.
+        Deletes a specific Datasource.
 
         Args:
             id (int): Datasource ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
 
         Returns:
             FireflyResponse: "true" if deleted successfuly, raises FireflyClientError otherwise.
@@ -100,16 +97,17 @@ class Datasource(APIResource):
     def create(cls, filename: str, wait: bool = False, skip_if_exists: bool = False,
                api_key: str = None) -> FireflyResponse:
         """
-        Uploads a file to the server and creates a datasource.
+        Uploads a file to the server to creates a new Datasource.
 
         Args:
             filename (str): File to be uploaded.
-            wait (Optional[bool]): Should call be synchronous or not.
-            skip_if_exists (Optional[bool]): Check if datasource with same name exists and skip if true.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            wait (Optional[bool]): Should the call be synchronous or not.
+            skip_if_exists (Optional[bool]): Check if a Datasource with same name exists and skip if true.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
-            FireflyResponse: Datasource ID if successful or datasource data if wait=True, raises FireflyError otherwise.
+            FireflyResponse: Datasource ID, if successful and wait=False or Datasource if successful and wait=True;
+            raises FireflyError otherwise.
         """
         data_source_name = os.path.basename(filename)
 
@@ -129,17 +127,18 @@ class Datasource(APIResource):
     def create_from_dataframe(cls, df, data_source_name: str, wait: bool = False, skip_if_exists: bool = False,
                               api_key: str = None) -> FireflyResponse:
         """
-        Creates a datasource from a pandas DataFrame.
+        Creates a Datasource from pandas DataFrame.
 
         Args:
-            df (pandas.DataFrame): DataFrame object to upload to the server.
-            data_source_name (str): Name of the datasource.
-            wait (Optional[bool]): Should call be synchronous or not.
-            skip_if_exists (Optional[bool]): Check if datasource with same name exists and skip if true.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            df (pandas.DataFrame): DataFrame object to upload to server.
+            data_source_name (str): Name of the Datasource.
+            wait (Optional[bool]): Should the call be synchronous or not.
+            skip_if_exists (Optional[bool]): Check if a Datasource with same name exists and skip if true.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
 
         Returns:
-            FireflyResponse: Datasource ID if successful, raises FireflyError otherwise.
+            FireflyResponse: Datasource ID, if successful and wait=False or Datasource if successful and wait=True;
+            raises FireflyError otherwise.
         """
         data_source_name = data_source_name if data_source_name.endswith('.csv') else data_source_name + ".csv"
         existing_ds = cls.list(filter_={'name': [data_source_name]}, api_key=api_key)
@@ -177,14 +176,14 @@ class Datasource(APIResource):
     @classmethod
     def get_base_types(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Get base types of the features of a specific datasource.
+        Gets base types of features for a specific Datasource.
 
         Args:
             id (int): Datasource ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
 
         Returns:
-            FireflyResponse: Containing a mapping of feature name to a base type.
+            FireflyResponse: Contains mapping of feature names to base types.
         """
         requestor = APIRequestor()
         url = '{prefix}/{id}/data_types/base'.format(prefix=cls._CLASS_PREFIX, id=id)
@@ -194,14 +193,14 @@ class Datasource(APIResource):
     @classmethod
     def get_feature_types(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Get feature types of the features of a specific datasource.
+        Gets feature types of features for a specific Datasource.
 
         Args:
             id (int): Datasource ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
-            FireflyResponse: Containing a mapping of feature name to a feature type.
+            FireflyResponse: Contains mapping of feature names to feature types.
         """
         requestor = APIRequestor()
         url = '{prefix}/{id}/data_types/feature'.format(prefix=cls._CLASS_PREFIX, id=id)
@@ -211,14 +210,14 @@ class Datasource(APIResource):
     @classmethod
     def get_type_warnings(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
-        Get type warning for the features of a specific datasource.
+        Gets type warning of features for a specific Datasource.
 
         Args:
             id (int): Datasource ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
 
         Returns:
-            FireflyResponse: Containing a mapping of feature name to a list of warning (can be empty).
+            FireflyResponse: Contains mapping of feature names to a list of type warnings (can be empty).
         """
         requestor = APIRequestor()
         url = '{prefix}/{id}/data_types/warning'.format(prefix=cls._CLASS_PREFIX, id=id)
@@ -233,35 +232,36 @@ class Datasource(APIResource):
                      sample_weight: List[str] = None, not_used: List[str] = None, hidden: List[str] = False,
                      wait: bool = False, skip_if_exists: bool = False, api_key: str = None) -> FireflyResponse:
         """
-        Creates and prepares a dataset.
+        Creates and prepares a Dataset.
 
-        When creating a dataset the feature roles are labeled and the feature types can be set by the user.
-        Data analysis is done in order to optimize the model training and search process.
+        While creating a Dataset, the feature roles are labeled and the feature types can be set by the user.
+        Data analysis is done in order to optimize model training and search process.
 
         Args:
             datasource_id (int): Datasource ID.
-            dataset_name (str): The name of the dataset in the application.
-            target (str): The feature name of the target if the header parameter is true, otherwise the column index.
+            dataset_name (str): The name of the Dataset.
+            target (str): The feature name of the target if header=True, otherwise the column index. #TODO
             problem_type (ProblemType): The problem type.
-            header (bool): Does to file include a header row or not.
-            na_values (Optional[List[str]]): List of na values.
-            retype_columns (Dict[str, FeatureType]): Change the chosen type of certain columns.
-            rename_columns (Optional[List[str]]): ???
-            datetime_format (Optional[str]): The date time format used in the data.
-            time_axis (Optional[str]): In timeseries, the feature that is the time axis.
-            block_id (Optional[List[str]]): To avoid data leakage, data can be splitted to blocks. Rows with the same
-                block id must be all in the train set or the test set. Requires to have at least 50 unique values.
+            header (bool): Does the file include a header row or not.
+            na_values (Optional[List[str]]): List of user specific Null values.
+            retype_columns (Dict[str, FeatureType]): Change the types of certain columns.
+            rename_columns (Optional[List[str]]): ??? #TODO
+            datetime_format (Optional[str]): The datetime format used in the data.
+            time_axis (Optional[str]): In timeseries problems, the feature that is the time axis.
+            block_id (Optional[List[str]]): To avoid data leakage, data can be split into blocks. Rows with the same
+                `block_id`, must all be in the train set or the test set. Requires at least 50 unique values in the data.
             sample_id (Optional[List[str]]): Row identifier.
             subdataset_id (Optional[List[str]]): Features which specify a subdataset ID in the data.
-            sample_weight (Optional[List[str]]): ???
+            sample_weight (Optional[List[str]]): ??? #TODO
             not_used (Optional[List[str]]): List of features to ignore.
-            hidden (Optional[List[str]]): ???
-            wait (Optional[bool]): Should call be synchronous or not.
-            skip_if_exists (Optional[bool]): Check if dataset with same name exists and skip if true.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run beforehand.
+            hidden (Optional[List[str]]): ??? #TODO
+            wait (Optional[bool]): Should the call be synchronous or not.
+            skip_if_exists (Optional[bool]): Check if a Dataset with same name exists and skip if true.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
 
         Returns:
-            FireflyResponse: Dataset ID if successful or dataset data if wait=True, raises FireflyError otherwise.
+            FireflyResponse: Dataset ID, if successful and wait=False or Dataset if successful and wait=True;
+            raises FireflyError otherwise.
         """
         return fireflyai.Dataset.create(datasource_id, dataset_name, target, problem_type, header, na_values,
                                         retype_columns, rename_columns, datetime_format, time_axis, block_id, sample_id,
