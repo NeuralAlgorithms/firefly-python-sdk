@@ -1,0 +1,21 @@
+componentName: fireflyai
+prettyName: Firefly Python SDK
+imageName: python
+imageRegistry: registry.hub.docker.com/library
+fullimageName: registry.hub.docker.com/library/python:3.7
+versionFilePath: fireflyai/version.py
+deployType: pypi
+subSystems:
+  firefly:
+    flavor: default
+prepStep: false
+pyLintStep: false
+unitTestStep: false
+deployStep: false
+kongStep: false
+dbMigrateStep: false
+dynamodbEnabled: True
+sanityStep: false
+versionStep: true
+downStreamStep: false
+pypiUploadStep: true
