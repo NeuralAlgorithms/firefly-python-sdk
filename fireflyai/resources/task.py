@@ -211,7 +211,11 @@ class Task(APIResource):
     @classmethod
     def refit(cls, id: int, datasource_id: int, wait: bool = False, api_key: str = None) -> FireflyResponse:
         """
-        Refits the task on a Datasource.
+        Refits the chosen Ensemble of a Task on a specific Datasource.
+
+        A refit trains the chosen Ensemble's models with the data of the given Datasource. The model training is done
+        from scratch and uses all the given data. A new Ensemble is created that is made of all the refitted models of
+        the chosen Ensemble and their original combination.
 
         Args:
             id (int): Task ID.
