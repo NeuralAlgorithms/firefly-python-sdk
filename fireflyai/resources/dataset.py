@@ -169,7 +169,8 @@ class Dataset(APIResource):
         return response
 
     @classmethod
-    def train(cls, task_name: str, dataset_id: int, estimators: List[Estimator] = None, target_metric: TargetMetric = None,
+    def train(cls, task_name: str, dataset_id: int, estimators: List[Estimator] = None,
+              target_metric: TargetMetric = None,
               splitting_strategy: SplittingStrategy = None, notes: str = None, ensemble_size: int = None,
               max_models_num: int = None, single_model_timeout: int = None, pipeline: List[Pipeline] = None,
               prediction_latency: int = None, interpretability_level: InterpretabilityLevel = None,
@@ -221,11 +222,18 @@ class Dataset(APIResource):
             FireflyResponse: Task ID, if successful and wait=False or Task if successful and wait=True;
             raises FireflyError otherwise.
         """
-        return fireflyai.Task.create(task_name, dataset_id, estimators, target_metric, splitting_strategy, notes,
-                                     ensemble_size, max_models_num, single_model_timeout, pipeline, prediction_latency,
-                                     interpretability_level, timeout, cost_matrix_weights, train_size, test_size,
-                                     validation_size, fold_size, n_folds, validation_strategy, cv_strategy, horizon,
-                                     forecast_horizon, model_life_time, refit_on_all, wait, skip_if_exists, api_key)
+        return fireflyai.Task.create(name=task_name, dataset_id=dataset_id, estimators=estimators,
+                                     target_metric=target_metric, splitting_strategy=splitting_strategy, notes=notes,
+                                     ensemble_size=ensemble_size, max_models_num=max_models_num,
+                                     single_model_timeout=single_model_timeout, pipeline=pipeline,
+                                     prediction_latency=prediction_latency,
+                                     interpretability_level=interpretability_level, timeout=timeout,
+                                     cost_matrix_weights=cost_matrix_weights, train_size=train_size,
+                                     test_size=test_size, validation_size=validation_size, fold_size=fold_size,
+                                     n_folds=n_folds, validation_strategy=validation_strategy, cv_strategy=cv_strategy,
+                                     horizon=horizon, forecast_horizon=forecast_horizon,
+                                     model_life_time=model_life_time, refit_on_all=refit_on_all, wait=wait,
+                                     skip_if_exists=skip_if_exists, api_key=api_key)
 
     @classmethod
     def get_available_estimators(cls, id: int, inter_level: InterpretabilityLevel = None,
