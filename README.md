@@ -1,2 +1,2 @@
 # firefly-python-sdk
-Firefly.ai python SDK
+Firefly.ai python SDK 
