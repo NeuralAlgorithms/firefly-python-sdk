@@ -1,4 +1,4 @@
-# firefly-python-sdk
+# Firefly.ai Python SDK
 Firefly.ai python SDK 
 
 ## Documentation
