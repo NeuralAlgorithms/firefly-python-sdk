@@ -22,6 +22,7 @@ setup(
     version=version_contents["__version__"],
     description='Python client for Firefly.ai API',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Firefly.ai',
     packages=find_packages(exclude=["tests", "tests.*"]),
 
