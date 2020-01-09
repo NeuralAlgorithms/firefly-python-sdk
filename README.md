@@ -19,3 +19,5 @@ import fireflyai as firefly
 
 firefly.authenticate(USER, PASSWORD)
 ```
+
+
