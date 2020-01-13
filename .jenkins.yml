@@ -19,3 +19,4 @@ sanityStep: false
 versionStep: true
 downStreamStep: false
 pypiUploadStep: true
+publicUpload: true
