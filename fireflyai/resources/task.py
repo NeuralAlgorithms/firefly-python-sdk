@@ -382,7 +382,7 @@ class Task(APIResource):
             config['splitting_strategy'] = SplittingStrategy.TIME_ORDER.value
         elif problem_type == ProblemType.REGRESSION:
             config['target_metric'] = TargetMetric.R2.value
-            config['splitting_strategy'] = SplittingStrategy.STRATIFIED.value
+            config['splitting_strategy'] = SplittingStrategy.SHUFFLED.value
 
         if inter_level == InterpretabilityLevel.PRECISE:
             config['ensemble_size'] = 5
