@@ -387,7 +387,7 @@ class Task(APIResource):
         if inter_level == InterpretabilityLevel.PRECISE:
             config['ensemble_size'] = 5
             config['max_models_num'] = 200
-        else:
+        elif inter_level == InterpretabilityLevel.EXPLAINABLE:
             config['ensemble_size'] = 1
             config['max_models_num'] = 20
 
