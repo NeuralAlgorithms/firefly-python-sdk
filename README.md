@@ -5,7 +5,7 @@ Firefly.ai python SDK
 https://firefly-python-sdk.readthedocs.io/en/latest/
 
 ### Example Notebook: 
-https://github.com/NeuralAlgorithms/firefly-python-sdk/blob/add-example/examples/SDK_example.ipynb
+https://github.com/NeuralAlgorithms/firefly-python-sdk/blob/master/examples/SDK_example.ipynb
 
 
 ## Installation:
@@ -18,6 +18,8 @@ https://github.com/NeuralAlgorithms/firefly-python-sdk/blob/add-example/examples
 import fireflyai as firefly
 
 firefly.authenticate(USER, PASSWORD)
+
+
 ```
 
 
