@@ -304,6 +304,25 @@ class Task(APIResource):
         return response
 
     @classmethod
+    def add_addition_time_to_completed_task(cls, id: int, new_time_budget: int, api_key: str = None) -> FireflyResponse:
+        """
+        Add addition time to train completed_task.
+
+        Args:
+            id (int): Task ID.
+            new_time_budget (int): Time in seconds.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
+
+        Returns:
+            FireflyResponse: "submitted" if operation was successful, raises FireflyClientError otherwise.
+        """
+        requestor = APIRequestor()
+        url = "{prefix}/{task_id}/add_addition_time/{new_time_budget}".format(prefix=cls._CLASS_PREFIX, task_id=id,
+                                                                              new_time_budget=new_time_budget)
+        response = requestor.post(url=url, api_key=api_key)
+        return response
+
+    @classmethod
     def rerun_task(cls, task_id: int, api_key: str = None) -> FireflyResponse:
         """
         Reruns a task that has been completed or stopped.
