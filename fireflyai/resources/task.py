@@ -304,7 +304,8 @@ class Task(APIResource):
         return response
 
     @classmethod
-    def add_additional_time_to_completed_task(cls, id: int, new_time_budget: int, api_key: str = None) -> FireflyResponse:
+    def add_additional_time_to_completed_task(cls, id: int, new_time_budget: int,
+                                              api_key: str = None) -> FireflyResponse:
         """
         Add addition time to train completed_task.
 
@@ -318,7 +319,7 @@ class Task(APIResource):
         """
         requestor = APIRequestor()
         url = "{prefix}/{task_id}/add_additional_time/{new_time_budget}".format(prefix=cls._CLASS_PREFIX, task_id=id,
-                                                                              new_time_budget=new_time_budget)
+                                                                                new_time_budget=new_time_budget)
         response = requestor.post(url=url, api_key=api_key)
         return response
 
