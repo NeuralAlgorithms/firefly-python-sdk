@@ -13,7 +13,8 @@ In addition, it is possible to use Ensembles to perform predictions, as well as 
 from typing import Dict, List
 
 import fireflyai
-from fireflyai import utils
+
+from fireflyai import utils, logger
 from fireflyai.api_requestor import APIRequestor
 from fireflyai.enums import Estimator, Pipeline, InterpretabilityLevel, ValidationStrategy, SplittingStrategy, \
     TargetMetric, CVStrategy, ProblemType
@@ -104,7 +105,7 @@ class Task(APIResource):
                timeout: int = 7200, cost_matrix_weights: List[List[str]] = None, train_size: float = None,
                test_size: float = None, validation_size: float = None, fold_size: int = None, n_folds: int = None,
                horizon: int = None, validation_strategy: ValidationStrategy = None, cv_strategy: CVStrategy = None,
-               forecast_horizon: int = None, model_life_time: int = None, refit_on_all: bool = None, wait: bool = False,
+               forecast_horizon: int = 10, model_life_time: int = 0, refit_on_all: bool = None, wait: bool = False,
                skip_if_exists: bool = False, api_key: str = None) -> FireflyResponse:
         """
         Create and run a training task.
@@ -138,7 +139,7 @@ class Task(APIResource):
             n_folds (Optional[int]): Number of folds when performing cross-validation splitting.\
             validation_strategy (Optional[ValidationStrategy]): Validation strategy used for the train task.
             cv_strategy (Optional[CVStrategy]): Cross-validation strategy to use for the train task.
-            horizon (Optional[int]): Something related to time-series models.
+            horizon (Optional[int]): DEPRECATED. Please use `forecast_horizon` and `model_life_time`.
             forecast_horizon (Optional[int]): Something related to time-series models.
             model_life_time (Optional[int]): Something related to time-series models.
             refit_on_all (Optional[bool]): Determines if the final ensemble will be refit on all data after
@@ -151,6 +152,10 @@ class Task(APIResource):
             FireflyResponse: Task ID, if successful and wait=False or Task if successful and wait=True;
             raises FireflyError otherwise.
         """
+        if horizon is not None:
+            logger.warning("Parameter `horizon` is DEPRACATED. Please use `forecast_horizon` and `model_life_time`.")
+        horizon = (model_life_time or 0) + (forecast_horizon or 10)
+
         existing_ds = cls.list(filter_={'name': [name]}, api_key=api_key)
         if existing_ds and existing_ds['total'] > 0:
             if skip_if_exists:
