@@ -153,7 +153,7 @@ class Task(APIResource):
             raises FireflyError otherwise.
         """
         if horizon is not None:
-            logger.warning("Parameter `horizon` is DEPRACATED. Please use `forecast_horizon` and `model_life_time`.")
+            logger.warning("Parameter `horizon` is DEPRECATED. Please use `forecast_horizon` and `model_life_time`.")
         horizon = (model_life_time or 0) + (forecast_horizon or 10)
 
         existing_ds = cls.list(filter_={'name': [name]}, api_key=api_key)
