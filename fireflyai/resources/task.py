@@ -154,7 +154,6 @@ class Task(APIResource):
         """
         if horizon is not None:
             logger.warning("Parameter `horizon` is DEPRECATED. Please use `forecast_horizon` and `model_life_time`.")
-        horizon = (model_life_time or 0) + (forecast_horizon or 10)
 
         existing_ds = cls.list(filter_={'name': [name]}, api_key=api_key)
         if existing_ds and existing_ds['total'] > 0:
@@ -192,7 +191,6 @@ class Task(APIResource):
             'validation_size': validation_size,
             'cv_strategy': cv_strategy.value if cv_strategy is not None else None,
             'n_folds': n_folds,
-            'horizon': horizon,
             'forecast_horizon': forecast_horizon,
             'model_life_time': model_life_time,
             'fold_size': fold_size,
