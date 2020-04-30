@@ -105,7 +105,7 @@ class Task(APIResource):
                timeout: int = 7200, cost_matrix_weights: List[List[str]] = None, train_size: float = None,
                test_size: float = None, validation_size: float = None, fold_size: int = None, n_folds: int = None,
                horizon: int = None, validation_strategy: ValidationStrategy = None, cv_strategy: CVStrategy = None,
-               forecast_horizon: int = 10, model_life_time: int = 0, refit_on_all: bool = None, wait: bool = False,
+               forecast_horizon: int = None, model_life_time: int = None, refit_on_all: bool = None, wait: bool = False,
                skip_if_exists: bool = False, api_key: str = None) -> FireflyResponse:
         """
         Create and run a training task.
