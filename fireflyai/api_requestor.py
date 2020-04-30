@@ -86,8 +86,7 @@ class APIRequestor(object):
             return FireflyResponse(headers=response.headers, status_code=response.status_code)
 
         if 'result' not in response_json:
-            return FireflyResponse(data={'result': response_json}, headers=response.headers,
-                                   status_code=response.status_code)
+            response_json = {'result': response_json}
 
         response_type = type(response_json['result'])
         if response_type == dict:
