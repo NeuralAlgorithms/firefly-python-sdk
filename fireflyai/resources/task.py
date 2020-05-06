@@ -198,7 +198,7 @@ class Task(APIResource):
             'notes': notes,
             'refit_on_all': refit_on_all
         }
-        task_config.update({k: v for k, v in user_config.items() if v})
+        task_config.update({k: v for k, v in user_config.items() if v is not None})
 
         requestor = APIRequestor()
         response = requestor.post(url=cls._CLASS_PREFIX, body=task_config, api_key=api_key)
