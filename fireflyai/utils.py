@@ -4,7 +4,7 @@ from typing import Dict
 
 import boto3
 
-FINITE_STATES = ['AVAILABLE', 'CREATED', 'CANCELED', 'FAILED', 'COMPLETED']
+FINITE_STATES = ['AVAILABLE', 'CREATED', 'CANCELED', 'FAILED', 'COMPLETED', 'ABORTED']
 
 
 def s3_upload(dataset, filename: str, aws_credentials: Dict):
@@ -28,10 +28,10 @@ def s3_upload_stream(csv_buffer, filename, aws_credentials):
     )
 
 
-def wait_for_finite_state(getter, id, **kwargs):
+def wait_for_finite_state(getter, id, state_field='state', **kwargs):
     res = getter(id, **kwargs)
-    state = res['state']
+    state = res[state_field]
     while state not in FINITE_STATES:
         time.sleep(5)
         res = getter(id, **kwargs)
-        state = res['state']
+        state = res[state_field]

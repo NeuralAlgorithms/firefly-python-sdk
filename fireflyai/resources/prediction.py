@@ -94,7 +94,7 @@ class Prediction(APIResource):
         response = requestor.post(url=cls._CLASS_PREFIX, body=data, api_key=api_key)
         id = response['id']
         if wait:
-            utils.wait_for_finite_state(cls.get, id, api_key=api_key)
+            utils.wait_for_finite_state(cls.get, id, state_field='stage', api_key=api_key)
             response = cls.get(id, api_key=api_key)
         else:
             response = FireflyResponse(data={'id': id})
