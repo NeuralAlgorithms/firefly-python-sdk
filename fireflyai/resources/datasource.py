@@ -94,13 +94,14 @@ class Datasource(APIResource):
         return cls._delete(id, api_key)
 
     @classmethod
-    def create(cls, filename: str, wait: bool = False, skip_if_exists: bool = False,
+    def create(cls, filename: str, na_values: List[str] = None, wait: bool = False, skip_if_exists: bool = False,
                api_key: str = None) -> FireflyResponse:
         """
         Uploads a file to the server to creates a new Datasource.
 
         Args:
             filename (str): File to be uploaded.
+            na_values (Optional[List[str]]): List of user specific Null values.
             wait (Optional[bool]): Should the call be synchronous or not.
             skip_if_exists (Optional[bool]): Check if a Datasource with same name exists and skip if true.
             api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
@@ -121,17 +122,18 @@ class Datasource(APIResource):
         aws_credentials = cls.__get_upload_details(api_key=api_key)
         utils.s3_upload(data_source_name, filename, aws_credentials.to_dict())
 
-        return cls._create(data_source_name, wait=wait, api_key=api_key)
+        return cls._create(data_source_name, na_values=na_values, wait=wait, api_key=api_key)
 
     @classmethod
-    def create_from_dataframe(cls, df, data_source_name: str, wait: bool = False, skip_if_exists: bool = False,
-                              api_key: str = None) -> FireflyResponse:
+    def create_from_dataframe(cls, df, data_source_name: str, na_values: List[str] = None, wait: bool = False,
+                              skip_if_exists: bool = False, api_key: str = None) -> FireflyResponse:
         """
         Creates a Datasource from pandas DataFrame.
 
         Args:
             df (pandas.DataFrame): DataFrame object to upload to server.
             data_source_name (str): Name of the Datasource.
+            na_values (Optional[List[str]]): List of user specific Null values.
             wait (Optional[bool]): Should the call be synchronous or not.
             skip_if_exists (Optional[bool]): Check if a Datasource with same name exists and skip if true.
             api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
@@ -154,15 +156,15 @@ class Datasource(APIResource):
         aws_credentials = cls.__get_upload_details(api_key=api_key)
         utils.s3_upload_stream(csv_buffer, data_source_name, aws_credentials)
 
-        return cls._create(data_source_name, wait=wait, api_key=api_key)
+        return cls._create(data_source_name, na_values=na_values, wait=wait, api_key=api_key)
 
     @classmethod
-    def _create(cls, datasource_name, wait: bool = False, api_key: str = None):
+    def _create(cls, datasource_name, na_values: List[str] = None, wait: bool = False, api_key: str = None):
         data = {
             "name": datasource_name,
             "filename": datasource_name,
             "analyze": True,
-            "na_values": None}
+            "na_values": na_values}
         requestor = APIRequestor()
         response = requestor.post(url=cls._CLASS_PREFIX, body=data, api_key=api_key)
 
