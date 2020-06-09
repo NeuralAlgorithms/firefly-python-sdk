@@ -5,10 +5,10 @@ users can upload additional Datasources that may be used for predictions.
 ‘Prediction’ API includes querying of predictions (Get, List and Delete) and creating a Prediction to get predictions
 on existing Ensembles and uploaded Datasources.
 """
-from typing import Dict
+import os
+from typing import Dict, List
 
 from fireflyai import utils
-
 from fireflyai.api_requestor import APIRequestor
 from fireflyai.firefly_response import FireflyResponse
 from fireflyai.resources.api_resource import APIResource
@@ -67,7 +67,9 @@ class Prediction(APIResource):
         return cls._delete(id, api_key)
 
     @classmethod
-    def create(cls, ensemble_id: int, data_id: int, wait: bool = None, api_key: str = None) -> FireflyResponse:
+    def create(cls, ensemble_id: int, data_id: int = None, file_path: str = None, download_details: Dict = None,
+               remove_header: bool = False,
+               data_name: str = None, header: List = None, wait: bool = None, api_key: str = None) -> FireflyResponse:
         """
         Create a prediction from a given ensemble and prediction datasource.
 
@@ -85,11 +87,17 @@ class Prediction(APIResource):
             FireflyResponse: Prediction ID, if successful and wait=False or Prediction if successful and wait=True;
             raises FireflyError otherwise.
         """
+        data_name = data_name or os.path.basename(file_path)
         data = {
             "ensemble_id": ensemble_id,
             "datasource_id": data_id,
+            "header": header,
+            "data_name": data_name,
+            "file_path": file_path,
+            "remove_header": remove_header,
         }
-
+        if download_details:
+            data['download_details'] = download_details
         requestor = APIRequestor()
         response = requestor.post(url=cls._CLASS_PREFIX, body=data, api_key=api_key)
         id = response['id']
