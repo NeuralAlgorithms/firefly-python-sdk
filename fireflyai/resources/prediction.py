@@ -87,7 +87,7 @@ class Prediction(APIResource):
             FireflyResponse: Prediction ID, if successful and wait=False or Prediction if successful and wait=True;
             raises FireflyError otherwise.
         """
-        data_name = data_name or os.path.basename(file_path)
+        data_name = data_name or os.path.basename(file_path) if file_path else None
         data = {
             "ensemble_id": ensemble_id,
             "datasource_id": data_id,
