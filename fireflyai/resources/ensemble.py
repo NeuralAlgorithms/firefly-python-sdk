@@ -207,23 +207,6 @@ class Ensemble(APIResource):
         return response
 
     @classmethod
-    def generate_export_download_link(cls, id: int, api_key: str = None) -> FireflyResponse:
-        """
-        Generates link to download the Ensemble.
-
-        Args:
-            id (int): Ensemble ID.
-            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
-
-        Returns:
-            FireflyResponse: URL with which to download a TAR file containing the model.
-        """
-        requestor = APIRequestor()
-        url = "{prefix}/{id}/download".format(prefix=cls._CLASS_PREFIX, id=id)
-        response = requestor.post(url=url, api_key=api_key)
-        return response
-
-    @classmethod
     def __cleanup_report(cls, result):
         if result:
             if result.get('NA value', {}).get('_title'):
