@@ -279,3 +279,20 @@ class Datasource(APIResource):
         url = "{prefix}/upload/details".format(prefix=cls._CLASS_PREFIX)
         response = requestor.post(url=url, api_key=api_key)
         return response
+
+    @classmethod
+    def get_metadata(cls, id: int, api_key: str = None) -> FireflyResponse:
+        """
+        Gets metadata for a specific Datasource.
+
+        Args:
+            id (int): Datasource ID.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
+
+        Returns:
+            FireflyResponse: Contains mapping of metadata.
+        """
+        requestor = APIRequestor()
+        url = '{prefix}/{id}/meta'.format(prefix=cls._CLASS_PREFIX, id=id)
+        response = requestor.get(url, api_key=api_key)
+        return response

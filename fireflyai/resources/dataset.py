@@ -178,7 +178,7 @@ class Dataset(APIResource):
               test_size: float = None, validation_size: float = None, fold_size: int = None, n_folds: int = None,
               horizon: int = None, validation_strategy: ValidationStrategy = None, cv_strategy: CVStrategy = None,
               forecast_horizon: int = None, model_life_time: int = None, refit_on_all: bool = None, wait: bool = False,
-              skip_if_exists: bool = False, api_key: str = None) -> FireflyResponse:
+              skip_if_exists: bool = False, leaky_features: List[str] = None, api_key: str = None) -> FireflyResponse:
         """
         Creates and runs a training task.
 
@@ -216,6 +216,7 @@ class Dataset(APIResource):
                 search process is done.
             wait (Optional[bool]): Should the call be synchronous or not.
             skip_if_exists (Optional[bool]): Check if a Dataset with same name exists and skip if true.
+            leaky_features: add leaky features
             api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
 
         Returns:
@@ -233,7 +234,7 @@ class Dataset(APIResource):
                                      n_folds=n_folds, validation_strategy=validation_strategy, cv_strategy=cv_strategy,
                                      horizon=horizon, forecast_horizon=forecast_horizon,
                                      model_life_time=model_life_time, refit_on_all=refit_on_all, wait=wait,
-                                     skip_if_exists=skip_if_exists, api_key=api_key)
+                                     skip_if_exists=skip_if_exists, leaky_features=leaky_features, api_key=api_key)
 
     @classmethod
     def get_available_estimators(cls, id: int, inter_level: InterpretabilityLevel = None,
@@ -315,3 +316,20 @@ class Dataset(APIResource):
             'pipeline': [Pipeline(e) for e in response['pipeline']],
         }
         return FireflyResponse(data=new_data)
+
+    @classmethod
+    def get_metadata(cls, id: int, api_key: str = None) -> FireflyResponse:
+        """
+        Gets metadata for a specific Dataset.
+
+        Args:
+            id (int): Dataset ID.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `fireflyai.authenticate()` was run prior.
+
+        Returns:
+            FireflyResponse: Contains mapping of metadata.
+        """
+        requestor = APIRequestor()
+        url = '{prefix}/{id}/meta'.format(prefix=cls._CLASS_PREFIX, id=id)
+        response = requestor.get(url, api_key=api_key)
+        return response

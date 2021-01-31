@@ -1,4 +1,7 @@
+import os
 from enum import Enum
+
+script_dir = os.path.dirname(__file__)
 
 
 class Pipeline(Enum):
@@ -54,6 +57,15 @@ class Pipeline(Enum):
                 Pipeline.DATA_CLEANING_POST_IMPUTATION, Pipeline.TIME_SERIES_AUTO_FEATURES,
                 Pipeline.FEATURE_ENGINEERING, Pipeline.FEATURE_STACKING, Pipeline.FEATURE_EMBEDDING,
                 Pipeline.FEATURE_SELECTION, Pipeline.ESTIMATOR]
+
+
+class ProblemType(Enum):
+    CLASSIFICATION = 'classification'
+    REGRESSION = 'regression'
+    ANOMALY_DETECTION = 'anomaly_detection'
+    TIMESERIES_CLASSIFICATION = 'classification_timeseries'
+    TIMESERIES_REGRESSION = 'regression_timeseries'
+    TIMESERIES_ANOMALY_DETECTION = 'anomaly_timeseries'
 
 
 class Estimator(Enum):
@@ -153,6 +165,13 @@ class Estimator(Enum):
                 Estimator.AVERAGE_ESTIMATOR, Estimator.ARIMA, Estimator.EXPONENTIAL_SMOOTHING, Estimator.BART]
 
 
+class FeatureType(Enum):
+    CATEGORICAL = 'categorical'
+    NUMERICAL = 'numerical'
+    TEXT = 'text'
+    DATETIME = 'datetime'
+
+
 class TargetMetric(Enum):
     F2 = 'f2'
     ACCURACY = 'accuracy'
@@ -219,6 +238,15 @@ class TargetMetric(Enum):
                 TargetMetric.SIGNED_SUM, TargetMetric.MAPE]
 
 
+class InterpretabilityLevel(Enum):
+    EXPLAINABLE = 2
+    PRECISE = 0
+    STANDARD = 0
+    STANDARD_WITH_EXPLAINABILITY = 1
+    SIMPLE_WITH_EXPLAINABILITY = 2
+    LEAKAGE_DETECTION = 3
+
+
 class SplittingStrategy(Enum):
     STRATIFIED = 'stratified'
     SHUFFLED = 'shuffled'
@@ -258,23 +286,3 @@ class CVStrategy(Enum):
     AVERAGE_MODELS = 'average_models'
     LAST_MODEL = 'last_model'
 
-
-class InterpretabilityLevel(Enum):
-    EXPLAINABLE = 2
-    PRECISE = 0
-
-
-class ProblemType(Enum):
-    CLASSIFICATION = 'classification'
-    REGRESSION = 'regression'
-    ANOMALY_DETECTION = 'anomaly_detection'
-    TIMESERIES_CLASSIFICATION = 'classification_timeseries'
-    TIMESERIES_REGRESSION = 'regression_timeseries'
-    TIMESERIES_ANOMALY_DETECTION = 'anomaly_timeseries'
-
-
-class FeatureType(Enum):
-    CATEGORICAL = 'categorical'
-    NUMERICAL = 'numerical'
-    TEXT = 'text'
-    DATETIME = 'datetime'

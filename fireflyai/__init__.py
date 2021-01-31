@@ -8,7 +8,6 @@ token = None
 api_base = 'https://api.firefly.ai'
 
 from fireflyai import enums
+from fireflyai import token_json
 from fireflyai.auth import authenticate
 from fireflyai.resources import *
-
-

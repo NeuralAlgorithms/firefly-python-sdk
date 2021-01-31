@@ -46,6 +46,11 @@ class Task(APIResource):
         return cls._list(search_term, page, page_size, sort, filter_, api_key)
 
     @classmethod
+    def get_task_id(cls, task_name: str, api_key: str = None) -> FireflyResponse:
+        task_id = cls.list(search_term=task_name)['hits'][-1]['id']
+        return task_id
+
+    @classmethod
     def get(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
         Get information on a specific Task.
@@ -106,7 +111,7 @@ class Task(APIResource):
                test_size: float = None, validation_size: float = None, fold_size: int = None, n_folds: int = None,
                horizon: int = None, validation_strategy: ValidationStrategy = None, cv_strategy: CVStrategy = None,
                forecast_horizon: int = None, model_life_time: int = None, refit_on_all: bool = None, wait: bool = False,
-               skip_if_exists: bool = False, api_key: str = None) -> FireflyResponse:
+               skip_if_exists: bool = False, leaky_features: List[str] = None, api_key: str = None) -> FireflyResponse:
         """
         Create and run a training task.
 
@@ -144,6 +149,7 @@ class Task(APIResource):
             model_life_time (Optional[int]): Something related to time-series models.
             refit_on_all (Optional[bool]): Determines if the final ensemble will be refit on all data after
                 search process is done.
+            leaky_features: add leaky features
             wait (Optional[bool]): Should the call be synchronous or not.
             skip_if_exists (Optional[bool]): Check if a Datasource with same name exists and skip if true.
             api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
@@ -153,7 +159,7 @@ class Task(APIResource):
             raises FireflyError otherwise.
         """
         if horizon is not None:
-            logger.warning("Parameter `horizon` is DEPRECATED. Please use `forecast_horizon` and `model_life_time`.")
+            fireflyai.logger.warning("Parameter `horizon` is DEPRECATED. Please use `forecast_horizon` and `model_life_time`.")
 
         existing_ds = cls.list(filter_={'name': [name]}, api_key=api_key)
         if existing_ds and existing_ds['total'] > 0:
@@ -196,6 +202,7 @@ class Task(APIResource):
             'fold_size': fold_size,
             'validation_strategy': validation_strategy.value if validation_strategy is not None else None,
             'notes': notes,
+            'leaky_features': leaky_features,
             'refit_on_all': refit_on_all
         }
         task_config.update({k: v for k, v in user_config.items() if v is not None})
@@ -204,7 +211,7 @@ class Task(APIResource):
         response = requestor.post(url=cls._CLASS_PREFIX, body=task_config, api_key=api_key)
         id = response['task_id']
         if wait:
-            utils.wait_for_finite_state(cls.get, id, api_key=api_key)
+            utils.wait_for_finite_state(cls.get, id, max_time=timeout, api_key=api_key)
             response = cls.get(id, api_key=api_key)
         else:
             response = FireflyResponse(data={'id': id})

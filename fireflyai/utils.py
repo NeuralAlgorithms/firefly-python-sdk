@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from typing import Dict
@@ -28,10 +29,15 @@ def s3_upload_stream(csv_buffer, filename, aws_credentials):
     )
 
 
-def wait_for_finite_state(getter, id, state_field='state', **kwargs):
+def wait_for_finite_state(getter, id, state_field='state', max_time=1800, **kwargs):
     res = getter(id, **kwargs)
     state = res[state_field]
+    time_counter = 0
     while state not in FINITE_STATES:
         time.sleep(5)
+        time_counter += 5
         res = getter(id, **kwargs)
         state = res[state_field]
+        if time_counter > max_time:
+            raise TimeoutError(' '.join(['TimeoutError - Failed to get FINITE_STATES in max_time =', str(max_time)]))
+    logging.info(' '.join(['Done waiting, we got status: ', str(state)]))

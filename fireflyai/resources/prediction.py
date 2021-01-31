@@ -108,3 +108,27 @@ class Prediction(APIResource):
             response = FireflyResponse(data={'id': id})
 
         return response
+
+    @classmethod
+    def run_ice(cls, pred_id: int, api_key: str = None) -> FireflyResponse:
+        requester = APIRequestor()
+        url = '/'.join([cls._CLASS_PREFIX, str(pred_id), 'ice'])
+        response = requester.post(url=url, api_key=api_key)
+        return response
+
+    @classmethod
+    def run_prescriptive(cls, pred_id: int, features: str, target_value: str, api_key: str = None) -> FireflyResponse:
+        requester = APIRequestor()
+        url = '/'.join([cls._CLASS_PREFIX, str(pred_id), 'perturbations'])
+        response = requester.post(url=url, body={"features": features, "target_value": target_value}, api_key=api_key)
+        return response
+
+    @classmethod
+    def get_perturbations_download_link(cls, pred_id: int, features: str = None,  api_key: str = None) -> FireflyResponse:
+        requester = APIRequestor()
+        url = '/'.join([cls._CLASS_PREFIX, str(pred_id), 'perturbations_link'])
+        data = {
+            "features": features
+        }
+        response = requester.post(url=url, body=data, api_key=api_key)
+        return response

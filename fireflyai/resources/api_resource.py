@@ -2,7 +2,6 @@ from collections import OrderedDict
 from typing import Dict
 
 import requests
-
 from fireflyai.api_requestor import APIRequestor
 from fireflyai.firefly_response import FireflyResponse
 
@@ -22,7 +21,7 @@ class APIResource(object):
 
     @classmethod
     def _list(cls, search_term: str = None, page: int = None, page_size: int = None, sort: Dict = None,
-              filter_: Dict = None, api_key: str = None) -> FireflyResponse:
+              filter_: Dict = None, api_key: str = None, url: str = None) -> FireflyResponse:
         requestor = APIRequestor()
 
         filters = requestor.parse_filter_parameters(filter_)
@@ -32,7 +31,7 @@ class APIResource(object):
                   'sort': sorts, 'filter': filters
                   }
 
-        response = requestor.get(url=cls.class_url(), params=params, api_key=api_key)
+        response = requestor.get(url=url if url else cls.class_url(), params=params, api_key=api_key)
         return response
 
     @classmethod

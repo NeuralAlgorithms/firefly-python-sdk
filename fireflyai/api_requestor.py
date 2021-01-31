@@ -1,3 +1,4 @@
+import logging
 import os
 from collections import OrderedDict
 
@@ -7,7 +8,7 @@ import uuid
 import fireflyai
 from fireflyai.errors import AuthenticationError, APIError, InvalidRequestError, APIConnectionError, PermissionError
 from fireflyai.firefly_response import FireflyResponse
-
+api_base = 'https://api.firefly.ai'
 
 class APIRequestor(object):
     def __init__(self, http_client=None):
@@ -33,27 +34,40 @@ class APIRequestor(object):
             return sorts
 
     def request(self, method, url, headers=None, body=None, params=None, api_key=None):
-        if method not in ['GET', 'POST', 'PUT', 'DELETE']:
-            raise APIConnectionError(
-                "Unrecognized HTTP method {method}. This may indicate a bug in the Firefly "
-                "internal bindings. Please contact support for assistance.".format(method=method)
-            )
-
         if api_key is None:
             token = self._get_token()
         else:
             token = api_key
 
+        abs_url = "{base_url}/{url}".format(base_url=api_base, url=url)
+
+        return self.request_base(method=method, url=abs_url, headers=headers, body=body, params=params, api_key=token)[0]
+
+    def request_base(self, method, url, headers=None, body=None, params=None, api_key=None, wrap_response=False):
+        retval = None
+        if method not in ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']:
+            raise APIConnectionError(
+                "Unrecognized HTTP method {method}. This may indicate a bug in the Whatify "
+                "internal bindings. Please contact support for assistance.".format(method=method)
+            )
+
         rheaders = self._build_headers()
         rheaders.update(**(headers or {}))
-
-        params = {'jwt': token, **(params or {})}
-        abs_url = "{base_url}/{url}".format(base_url=fireflyai.api_base, url=url)
-        response = self._http_client.request(method=method, url=abs_url, headers=rheaders, json=body, params=params)
-        return self._handle_response(response)
+        params = {'jwt': api_key, **(params or {})}
+        response = self._http_client.request(method=method, url=url, headers=rheaders, json=body, params=params)
+        try:
+            retval = self._handle_response(response)
+        except:
+            logging.info('Failed to get API response')
+            if not wrap_response:
+                raise APIError(response.content)
+        return retval, response.content
 
     def post(self, url, headers=None, body=None, params=None, api_key=None):
         return self.request("POST", url, headers, body, params, api_key)
+
+    def patch(self, url, headers=None, body=None, params=None, api_key=None):
+        return self.request("PATCH", url, headers, body, params, api_key)
 
     def get(self, url, headers=None, body=None, params=None, api_key=None):
         return self.request("GET", url, headers, body, params, api_key)

@@ -105,6 +105,59 @@ class Ensemble(APIResource):
         return FireflyResponse(data=result)
 
     @classmethod
+    def get_feature_importance_report(cls, id: int, api_key: str = None) -> FireflyResponse:
+        """
+        Gets feature importance report for Ensemble.
+
+        Args:
+            id (int): Ensemble ID.
+            api_key (Optional[str]): Explicit api_key, not required if `fireflyai.authenticate` was run prior.
+
+        Returns:
+            FireflyResponse: Contains mapping of feature importance for the ensemble_id.
+        """
+        requestor = APIRequestor()
+        url = "reports/{prefix}/{id}/feature_importance".format(prefix=cls._CLASS_PREFIX, id=id)
+        response = requestor.get(url=url, api_key=api_key)
+        result = response.to_dict()
+        cls.__cleanup_report(result)
+        return FireflyResponse(data=result)
+
+    @classmethod
+    def set_ensemble_in_production(cls, ensemble_id: int, api_key: str = None) -> FireflyResponse:
+        """
+        Mark the Ensemble as in Production.
+
+        Args:
+            id (int): ensemble ID.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `Whatify.login()` was run prior.
+
+        Returns:
+            FireflyResponse: Contains mapping of wisdoms for the user.
+        """
+        requestor = APIRequestor()
+        url = '{prefix}/write/{ensemble_id}/set_in_production'.format(prefix=cls._CLASS_PREFIX, ensemble_id=ensemble_id)
+        response = requestor.post(url, api_key=api_key)
+        return response
+
+    @classmethod
+    def remove_ensemble_in_production(cls, ensemble_id: int, api_key: str = None) -> FireflyResponse:
+        """
+        remove in production Mark from Ensemble
+
+        Args:
+            id (int): ensemble ID.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `Whatify.login()` was run prior.
+
+        Returns:
+            FireflyResponse: Contains mapping of wisdoms for the user.
+        """
+        requestor = APIRequestor()
+        url = '{prefix}/write/{ensemble_id}/remove_from_production'.format(prefix=cls._CLASS_PREFIX, ensemble_id=ensemble_id)
+        response = requestor.post(url, api_key=api_key)
+        return response
+
+    @classmethod
     def get_ensemble_test_prediction_sample(cls, id: int, api_key: str = None) -> FireflyResponse:
         """
         Gets prediction samples for Ensemble.
@@ -217,3 +270,25 @@ class Ensemble(APIResource):
                 result['Permutation'].pop('_title')
             if result.get('Permutation', {}).get('_description'):
                 result['Permutation'].pop('_description')
+
+    @classmethod
+    def get_ensemble_id(cls, task_id) -> FireflyResponse:
+        ensemble_id = cls.list(filter_={'task_id': [task_id], 'stage': ['TASK', 'REFIT']})['hits'][-1]['id']
+        return ensemble_id
+
+    @classmethod
+    def run_model_sensitivity(cls, ensemble_id: int, api_key: str = None) -> FireflyResponse:
+        """
+        run the model sensitivity for Ensemble
+
+        Args:
+            id (int): ensemble ID.
+            api_key (Optional[str]): Explicit `api_key`, not required, if `Whatify.login()` was run prior.
+
+        Returns:
+            FireflyResponse: Contains status of the trigger.
+        """
+        requestor = APIRequestor()
+        url = '{prefix}/{ensemble_id}/sensitivity'.format(prefix=cls._CLASS_PREFIX, ensemble_id=ensemble_id)
+        response = requestor.post(url, api_key=api_key)
+        return response
